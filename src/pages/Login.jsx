@@ -1,0 +1,100 @@
+import React, { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth';
+import { Button } from '../components/ui/button';
+import { Input } from '../components/ui/input';
+import { Label } from '../components/ui/label';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/card';
+import logoApp from '@/assets/logo-boilerplate.png';
+import { useToast } from '@/components/ui/use-toast';
+
+const Login = () => {
+  const navigate = useNavigate();
+  const { login } = useAuth();
+  const { toast } = useToast();
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+  });
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+
+    const result = await login(formData);
+
+    if (result.success) {
+      navigate('/dashboard');
+    } else {
+      toast({
+        title: "Error",
+        description: result.error || "Invalid credentials.",
+        variant: "destructive",
+      });
+    }
+
+    setLoading(false);
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+      <Card className="w-full max-w-md shadow-2xl">
+        <CardHeader className="space-y-4 text-center">
+          <img src={logoApp} className="mx-auto h-[7.5rem]" alt="Boilerplates App" />
+          <div>
+            <CardDescription className="text-base mt-2">
+              Management System
+            </CardDescription>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="nama@email.com"
+                value={formData.email}
+                disabled={loading}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                placeholder="••••••••"
+                value={formData.password}
+                disabled={loading}
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                required
+              />
+            </div>
+
+            <Button
+              type="submit"
+              className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700"
+              disabled={loading}
+            >
+              {loading ? 'Loading...' : 'Login'}
+            </Button>
+          </form>
+
+          <div className="mt-6 text-center text-sm text-slate-600">
+            <p>Contact Administrator:</p>
+            <p className="font-mono text-xs mt-1">
+              admin@boilerplates.dev
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
+export default Login;

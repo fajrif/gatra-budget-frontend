@@ -1,0 +1,212 @@
+import React, { useEffect, useState } from 'react';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { addressesAPI, countriesAPI, provincesAPI, citiesAPI, areasAPI } from '@/api/endpoints';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import Select from '@/components/ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { addressSchema } from '@/utils/validations/Address';
+import { useToast } from '@/components/ui/use-toast';
+
+const AddEditAddressDialog = ({ isOpen, onClose, editingItem, onFinish }) => {
+  const { toast } = useToast();
+  const [selectedCountryId, setSelectedCountryId] = useState('');
+  const [selectedProvinceId, setSelectedProvinceId] = useState('');
+  const [selectedCityId, setSelectedCityId] = useState('');
+
+  const { data: countriesData } = useQuery({
+    queryKey: ['countries-all'],
+    queryFn: () => countriesAPI.getAll({ all: true }),
+    select: (res) => res.data?.countries ?? [],
+  });
+
+  const { data: provincesData } = useQuery({
+    queryKey: ['provinces-by-country', selectedCountryId],
+    queryFn: () => provincesAPI.getAll({ country_id: selectedCountryId, all: true }),
+    select: (res) => res.data?.provinces ?? [],
+    enabled: !!selectedCountryId,
+  });
+
+  const { data: citiesData } = useQuery({
+    queryKey: ['cities-by-province', selectedProvinceId],
+    queryFn: () => citiesAPI.getAll({ province_id: selectedProvinceId, all: true }),
+    select: (res) => res.data?.cities ?? [],
+    enabled: !!selectedProvinceId,
+  });
+
+  const { data: areasData } = useQuery({
+    queryKey: ['areas-by-city', selectedCityId],
+    queryFn: () => areasAPI.getAll({ city_id: selectedCityId, all: true }),
+    select: (res) => res.data?.areas ?? [],
+    enabled: !!selectedCityId,
+  });
+
+  const { register, control, handleSubmit, formState: { errors }, reset, setValue } = useForm({
+    resolver: zodResolver(addressSchema),
+    defaultValues: { name: '', address: '', country_id: '', province_id: '', city_id: '', area_id: '', zipcode: '' },
+  });
+
+  useEffect(() => {
+    if (editingItem) {
+      const vals = {
+        name: editingItem.name,
+        address: editingItem.address,
+        country_id: editingItem.country_id,
+        province_id: editingItem.province_id,
+        city_id: editingItem.city_id,
+        area_id: editingItem.area_id || '',
+        zipcode: editingItem.zipcode || '',
+      };
+      reset(vals);
+      setSelectedCountryId(editingItem.country_id);
+      setSelectedProvinceId(editingItem.province_id);
+      setSelectedCityId(editingItem.city_id);
+    } else {
+      reset({ name: '', address: '', country_id: '', province_id: '', city_id: '', area_id: '', zipcode: '' });
+      setSelectedCountryId('');
+      setSelectedProvinceId('');
+      setSelectedCityId('');
+    }
+  }, [editingItem, reset]);
+
+  const saveMutation = useMutation({
+    mutationFn: (data) =>
+      editingItem ? addressesAPI.update(editingItem.id, data) : addressesAPI.create(data),
+    onSuccess: () => {
+      toast({ title: 'Success', description: `Address ${editingItem ? 'updated' : 'created'} successfully.`, variant: 'success' });
+      onFinish(true);
+    },
+    onError: (err) => {
+      toast({ title: 'Error', description: err.response?.data?.error || 'Failed to save address.', variant: 'destructive' });
+    },
+  });
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-lg">
+        <DialogHeader>
+          <DialogTitle>{editingItem ? 'Edit Address' : 'Add Address'}</DialogTitle>
+        </DialogHeader>
+        <form onSubmit={handleSubmit((data) => saveMutation.mutate(data))} className="space-y-4">
+          <div>
+            <Label>Label</Label>
+            <Input {...register('name')} placeholder="e.g. Home, Office" className="mt-1" />
+            {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name.message}</p>}
+          </div>
+          <div>
+            <Label>Full Address</Label>
+            <Textarea {...register('address')} placeholder="Jl. Sudirman No. 1" className="mt-1" rows={2} />
+            {errors.address && <p className="text-red-500 text-xs mt-1">{errors.address.message}</p>}
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label>Country</Label>
+              <Controller
+                name="country_id"
+                control={control}
+                render={({ field }) => (
+                  <Select
+                    options={(countriesData || []).map((c) => ({ value: c.id, label: c.name }))}
+                    value={field.value}
+                    onChange={(val) => {
+                      field.onChange(val);
+                      setSelectedCountryId(val);
+                      setValue('province_id', '');
+                      setValue('city_id', '');
+                      setValue('area_id', '');
+                      setSelectedProvinceId('');
+                      setSelectedCityId('');
+                    }}
+                    placeholder="Select..."
+                    className="mt-1"
+                  />
+                )}
+              />
+              {errors.country_id && <p className="text-red-500 text-xs mt-1">{errors.country_id.message}</p>}
+            </div>
+            <div>
+              <Label>Province</Label>
+              <Controller
+                name="province_id"
+                control={control}
+                render={({ field }) => (
+                  <Select
+                    options={(provincesData || []).map((p) => ({ value: p.id, label: p.name }))}
+                    value={field.value}
+                    onChange={(val) => {
+                      field.onChange(val);
+                      setSelectedProvinceId(val);
+                      setValue('city_id', '');
+                      setValue('area_id', '');
+                      setSelectedCityId('');
+                    }}
+                    placeholder="Select..."
+                    className="mt-1"
+                    disabled={!selectedCountryId}
+                  />
+                )}
+              />
+              {errors.province_id && <p className="text-red-500 text-xs mt-1">{errors.province_id.message}</p>}
+            </div>
+            <div>
+              <Label>City</Label>
+              <Controller
+                name="city_id"
+                control={control}
+                render={({ field }) => (
+                  <Select
+                    options={(citiesData || []).map((c) => ({ value: c.id, label: c.name }))}
+                    value={field.value}
+                    onChange={(val) => {
+                      field.onChange(val);
+                      setSelectedCityId(val);
+                      setValue('area_id', '');
+                    }}
+                    placeholder="Select..."
+                    className="mt-1"
+                    disabled={!selectedProvinceId}
+                  />
+                )}
+              />
+              {errors.city_id && <p className="text-red-500 text-xs mt-1">{errors.city_id.message}</p>}
+            </div>
+            <div>
+              <Label>Area <span className="text-slate-400 text-xs">(optional)</span></Label>
+              <Controller
+                name="area_id"
+                control={control}
+                render={({ field }) => (
+                  <Select
+                    options={(areasData || []).map((a) => ({ value: a.id, label: a.name }))}
+                    value={field.value}
+                    onChange={field.onChange}
+                    placeholder="Select..."
+                    className="mt-1"
+                    disabled={!selectedCityId}
+                    clearable
+                  />
+                )}
+              />
+            </div>
+          </div>
+          <div>
+            <Label>Zipcode <span className="text-slate-400 text-xs">(optional)</span></Label>
+            <Input {...register('zipcode')} placeholder="12345" className="mt-1 w-32" />
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
+            <Button type="submit" disabled={saveMutation.isPending} className="bg-blue-900 hover:bg-blue-800">
+              {saveMutation.isPending ? 'Saving...' : 'Save'}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+export default AddEditAddressDialog;
