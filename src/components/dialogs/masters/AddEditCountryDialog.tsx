@@ -10,11 +10,33 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { countrySchema } from '@/utils/validations/Country';
 import { useToast } from '@/components/ui/use-toast';
 import { Save, Loader2 } from 'lucide-react';
+import type { z } from 'zod';
 
-const AddEditCountryDialog = ({ isOpen, onClose, editingItem, onFinish }) => {
+export type CountryFormValues = z.infer<typeof countrySchema>;
+
+export interface AddEditCountryDialogProps {
+  isOpen: boolean;
+  onClose: () => void;
+  /** Country to edit; undefined when creating. */
+  editingItem?: CountryFormValues & { id?: string };
+  /** Called with `shouldRefresh` after successful save. */
+  onFinish: (shouldRefresh: boolean) => void;
+}
+
+const AddEditCountryDialog = ({
+  isOpen,
+  onClose,
+  editingItem,
+  onFinish,
+}: AddEditCountryDialogProps) => {
   const { toast } = useToast();
 
-  const { register, handleSubmit, formState: { errors }, reset } = useForm({
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+  } = useForm<CountryFormValues>({
     resolver: zodResolver(countrySchema),
     defaultValues: editingItem || { name: '', code: '' },
   });
@@ -24,14 +46,22 @@ const AddEditCountryDialog = ({ isOpen, onClose, editingItem, onFinish }) => {
   }, [editingItem, reset]);
 
   const saveMutation = useMutation({
-    mutationFn: (data) =>
-      editingItem ? countriesAPI.update(editingItem.id, data) : countriesAPI.create(data),
+    mutationFn: (data: CountryFormValues) =>
+      editingItem?.id ? countriesAPI.update(editingItem.id, data) : countriesAPI.create(data),
     onSuccess: () => {
-      toast({ title: 'Success', description: `Country ${editingItem ? 'updated' : 'created'} successfully.`, variant: 'success' });
+      toast({
+        title: 'Success',
+        description: `Country ${editingItem ? 'updated' : 'created'} successfully.`,
+        variant: 'success',
+      });
       onFinish(true);
     },
-    onError: (err) => {
-      toast({ title: 'Error', description: err.response?.data?.error || 'Failed to save country.', variant: 'destructive' });
+    onError: (err: any) => {
+      toast({
+        title: 'Error',
+        description: err.response?.data?.error || 'Failed to save country.',
+        variant: 'destructive',
+      });
     },
   });
 
@@ -41,7 +71,10 @@ const AddEditCountryDialog = ({ isOpen, onClose, editingItem, onFinish }) => {
         <DialogHeader>
           <DialogTitle>{editingItem ? 'Edit Country' : 'Add Country'}</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit((data) => saveMutation.mutate(data))} className="space-y-4">
+        <form
+          onSubmit={handleSubmit((data) => saveMutation.mutate(data))}
+          className="space-y-4"
+        >
           <div>
             <Label>Country Name</Label>
             <Input {...register('name')} placeholder="Indonesia" className="mt-1" />
@@ -49,12 +82,23 @@ const AddEditCountryDialog = ({ isOpen, onClose, editingItem, onFinish }) => {
           </div>
           <div>
             <Label>Code (ISO 3166-1 alpha-2)</Label>
-            <Input {...register('code')} placeholder="ID" maxLength={2} className="mt-1 uppercase" />
+            <Input
+              {...register('code')}
+              placeholder="ID"
+              maxLength={2}
+              className="mt-1 uppercase"
+            />
             {errors.code && <p className="text-red-500 text-xs mt-1">{errors.code.message}</p>}
           </div>
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
-            <Button type="submit" disabled={saveMutation.isPending} className="bg-green-600 hover:bg-green-700">
+            <Button type="button" variant="outline" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              disabled={saveMutation.isPending}
+              className="bg-green-600 hover:bg-green-700"
+            >
               {saveMutation.isPending ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
               ) : (

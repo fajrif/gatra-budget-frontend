@@ -7,12 +7,30 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Select from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
 import { citySchema } from '@/utils/validations/City';
 import { useToast } from '@/components/ui/use-toast';
 import { Save, Loader2 } from 'lucide-react';
+import type { z } from 'zod';
 
-const AddEditCityDialog = ({ isOpen, onClose, editingItem, onFinish }) => {
+export type CityFormValues = z.infer<typeof citySchema>;
+
+export interface AddEditCityDialogProps {
+  isOpen: boolean;
+  onClose: () => void;
+  /** City to edit; undefined when creating. */
+  editingItem?: CityFormValues & { id?: string };
+  /** Called with `shouldRefresh` after successful save. */
+  onFinish: (shouldRefresh: boolean) => void;
+}
+
+const AddEditCityDialog = ({ isOpen, onClose, editingItem, onFinish }: AddEditCityDialogProps) => {
   const { toast } = useToast();
 
   const { data: provincesData } = useQuery({
@@ -21,9 +39,17 @@ const AddEditCityDialog = ({ isOpen, onClose, editingItem, onFinish }) => {
     select: (res) => res.data?.provinces ?? [],
   });
 
-  const { register, control, handleSubmit, formState: { errors }, reset } = useForm({
+  const {
+    register,
+    control,
+    handleSubmit,
+    formState: { errors },
+    reset,
+  } = useForm<CityFormValues>({
     resolver: zodResolver(citySchema),
-    defaultValues: editingItem ? { name: editingItem.name, province_id: editingItem.province_id } : { name: '', province_id: '' },
+    defaultValues: editingItem
+      ? { name: editingItem.name, province_id: editingItem.province_id }
+      : { name: '', province_id: '' },
   });
 
   useEffect(() => {
@@ -35,14 +61,22 @@ const AddEditCityDialog = ({ isOpen, onClose, editingItem, onFinish }) => {
   }, [editingItem, reset]);
 
   const saveMutation = useMutation({
-    mutationFn: (data) =>
-      editingItem ? citiesAPI.update(editingItem.id, data) : citiesAPI.create(data),
+    mutationFn: (data: CityFormValues) =>
+      editingItem?.id ? citiesAPI.update(editingItem.id, data) : citiesAPI.create(data),
     onSuccess: () => {
-      toast({ title: 'Success', description: `City ${editingItem ? 'updated' : 'created'} successfully.`, variant: 'success' });
+      toast({
+        title: 'Success',
+        description: `City ${editingItem ? 'updated' : 'created'} successfully.`,
+        variant: 'success',
+      });
       onFinish(true);
     },
-    onError: (err) => {
-      toast({ title: 'Error', description: err.response?.data?.error || 'Failed to save city.', variant: 'destructive' });
+    onError: (err: any) => {
+      toast({
+        title: 'Error',
+        description: err.response?.data?.error || 'Failed to save city.',
+        variant: 'destructive',
+      });
     },
   });
 
@@ -75,11 +109,19 @@ const AddEditCityDialog = ({ isOpen, onClose, editingItem, onFinish }) => {
                 />
               )}
             />
-            {errors.province_id && <p className="text-red-500 text-xs mt-1">{errors.province_id.message}</p>}
+            {errors.province_id && (
+              <p className="text-red-500 text-xs mt-1">{errors.province_id.message}</p>
+            )}
           </div>
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
-            <Button type="submit" disabled={saveMutation.isPending} className="bg-green-600 hover:bg-green-700">
+            <Button type="button" variant="outline" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              disabled={saveMutation.isPending}
+              className="bg-green-600 hover:bg-green-700"
+            >
               {saveMutation.isPending ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
               ) : (

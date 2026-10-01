@@ -7,12 +7,30 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Select from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
 import { areaSchema } from '@/utils/validations/Area';
 import { useToast } from '@/components/ui/use-toast';
 import { Save, Loader2 } from 'lucide-react';
+import type { z } from 'zod';
 
-const AddEditAreaDialog = ({ isOpen, onClose, editingItem, onFinish }) => {
+export type AreaFormValues = z.infer<typeof areaSchema>;
+
+export interface AddEditAreaDialogProps {
+  isOpen: boolean;
+  onClose: () => void;
+  /** Area to edit; undefined when creating. */
+  editingItem?: AreaFormValues & { id?: string };
+  /** Called with `shouldRefresh` after successful save. */
+  onFinish: (shouldRefresh: boolean) => void;
+}
+
+const AddEditAreaDialog = ({ isOpen, onClose, editingItem, onFinish }: AddEditAreaDialogProps) => {
   const { toast } = useToast();
 
   const { data: citiesData } = useQuery({
@@ -21,9 +39,17 @@ const AddEditAreaDialog = ({ isOpen, onClose, editingItem, onFinish }) => {
     select: (res) => res.data?.cities ?? [],
   });
 
-  const { register, control, handleSubmit, formState: { errors }, reset } = useForm({
+  const {
+    register,
+    control,
+    handleSubmit,
+    formState: { errors },
+    reset,
+  } = useForm<AreaFormValues>({
     resolver: zodResolver(areaSchema),
-    defaultValues: editingItem ? { name: editingItem.name, city_id: editingItem.city_id } : { name: '', city_id: '' },
+    defaultValues: editingItem
+      ? { name: editingItem.name, city_id: editingItem.city_id }
+      : { name: '', city_id: '' },
   });
 
   useEffect(() => {
@@ -35,14 +61,22 @@ const AddEditAreaDialog = ({ isOpen, onClose, editingItem, onFinish }) => {
   }, [editingItem, reset]);
 
   const saveMutation = useMutation({
-    mutationFn: (data) =>
-      editingItem ? areasAPI.update(editingItem.id, data) : areasAPI.create(data),
+    mutationFn: (data: AreaFormValues) =>
+      editingItem?.id ? areasAPI.update(editingItem.id, data) : areasAPI.create(data),
     onSuccess: () => {
-      toast({ title: 'Success', description: `Area ${editingItem ? 'updated' : 'created'} successfully.`, variant: 'success' });
+      toast({
+        title: 'Success',
+        description: `Area ${editingItem ? 'updated' : 'created'} successfully.`,
+        variant: 'success',
+      });
       onFinish(true);
     },
-    onError: (err) => {
-      toast({ title: 'Error', description: err.response?.data?.error || 'Failed to save area.', variant: 'destructive' });
+    onError: (err: any) => {
+      toast({
+        title: 'Error',
+        description: err.response?.data?.error || 'Failed to save area.',
+        variant: 'destructive',
+      });
     },
   });
 
@@ -75,11 +109,19 @@ const AddEditAreaDialog = ({ isOpen, onClose, editingItem, onFinish }) => {
                 />
               )}
             />
-            {errors.city_id && <p className="text-red-500 text-xs mt-1">{errors.city_id.message}</p>}
+            {errors.city_id && (
+              <p className="text-red-500 text-xs mt-1">{errors.city_id.message}</p>
+            )}
           </div>
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
-            <Button type="submit" disabled={saveMutation.isPending} className="bg-green-600 hover:bg-green-700">
+            <Button type="button" variant="outline" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              disabled={saveMutation.isPending}
+              className="bg-green-600 hover:bg-green-700"
+            >
               {saveMutation.isPending ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
               ) : (
