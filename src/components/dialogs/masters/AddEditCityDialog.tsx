@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/dialog';
 import { citySchema } from '@/utils/validations/City';
 import { useToast } from '@/components/ui/use-toast';
+import { getErrorMessage } from '@/utils/getErrorMessage';
 import { Save, Loader2 } from 'lucide-react';
 import type { z } from 'zod';
 
@@ -71,10 +72,10 @@ const AddEditCityDialog = ({ isOpen, onClose, editingItem, onFinish }: AddEditCi
       });
       onFinish(true);
     },
-    onError: (err: any) => {
+    onError: (err) => {
       toast({
         title: 'Error',
-        description: err.response?.data?.error || 'Failed to save city.',
+        description: getErrorMessage(err, 'Failed to save city.'),
         variant: 'destructive',
       });
     },

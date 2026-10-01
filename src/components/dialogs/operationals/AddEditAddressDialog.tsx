@@ -23,6 +23,7 @@ import {
 } from '@/components/ui/dialog';
 import { addressSchema } from '@/utils/validations/Address';
 import { useToast } from '@/components/ui/use-toast';
+import { getErrorMessage } from '@/utils/getErrorMessage';
 import { Save, Loader2 } from 'lucide-react';
 import type { z } from 'zod';
 
@@ -57,7 +58,7 @@ const AddEditAddressDialog = ({
   const { data: provincesData } = useQuery({
     queryKey: ['provinces-by-country', selectedCountryId],
     queryFn: () =>
-      provincesAPI.getAll({ country_id: selectedCountryId, all: true } as any),
+      provincesAPI.getAll({ country_id: selectedCountryId, all: true }),
     select: (res) => res.data?.provinces ?? [],
     enabled: !!selectedCountryId,
   });
@@ -65,14 +66,14 @@ const AddEditAddressDialog = ({
   const { data: citiesData } = useQuery({
     queryKey: ['cities-by-province', selectedProvinceId],
     queryFn: () =>
-      citiesAPI.getAll({ province_id: selectedProvinceId, all: true } as any),
+      citiesAPI.getAll({ province_id: selectedProvinceId, all: true }),
     select: (res) => res.data?.cities ?? [],
     enabled: !!selectedProvinceId,
   });
 
   const { data: areasData } = useQuery({
     queryKey: ['areas-by-city', selectedCityId],
-    queryFn: () => areasAPI.getAll({ city_id: selectedCityId, all: true } as any),
+    queryFn: () => areasAPI.getAll({ city_id: selectedCityId, all: true }),
     select: (res) => res.data?.areas ?? [],
     enabled: !!selectedCityId,
   });
@@ -139,16 +140,17 @@ const AddEditAddressDialog = ({
       });
       onFinish(true);
     },
-    onError: (err: any) => {
+    onError: (err) => {
       toast({
         title: 'Error',
-        description: err.response?.data?.error || 'Failed to save address.',
+        description: getErrorMessage(err, 'Failed to save address.'),
         variant: 'destructive',
       });
     },
   });
 
-  const mapOptions = (items: any[] = []) => items.map((c) => ({ value: c.id, label: c.name }));
+  const mapOptions = (items: { id: string; name: string }[] = []) =>
+    items.map((c) => ({ value: c.id, label: c.name }));
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>

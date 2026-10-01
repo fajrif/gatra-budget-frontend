@@ -2,7 +2,13 @@ import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 
-const ProtectedRoute = ({ children, adminOnly = false }) => {
+export interface ProtectedRouteProps {
+  children?: React.ReactNode;
+  /** Restrict the route to the `admin` role. */
+  adminOnly?: boolean;
+}
+
+const ProtectedRoute = ({ children, adminOnly = false }: ProtectedRouteProps) => {
   const { user, loading } = useAuth();
 
   if (loading) {
@@ -28,7 +34,7 @@ const ProtectedRoute = ({ children, adminOnly = false }) => {
     );
   }
 
-  return children;
+  return <>{children}</>;
 };
 
 export default ProtectedRoute;

@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { provincesAPI, countriesAPI } from '@/api/endpoints';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import Select from '@/components/ui/select';
 import { provinceSchema } from '@/utils/validations/Province';
 import { useToast } from '@/components/ui/use-toast';
+import { getErrorMessage } from '@/utils/getErrorMessage';
 import { Save, Loader2 } from 'lucide-react';
 import type { z } from 'zod';
 
@@ -34,18 +35,14 @@ const AddEditProvinceDialog = ({
 
   const {
     register,
+    control,
     handleSubmit,
     formState: { errors },
     reset,
-    control,
-    setValue,
-    watch,
   } = useForm<ProvinceFormValues>({
     resolver: zodResolver(provinceSchema),
     defaultValues: editingItem || { name: '', country_id: '' },
   });
-
-  const selectedCountryId = watch('country_id');
 
   // Fetch countries for dropdown
   const { data: countriesData } = useQuery({
@@ -55,11 +52,10 @@ const AddEditProvinceDialog = ({
     enabled: isOpen,
   });
 
-  const countryOptions =
-    countriesData?.map((c: any) => ({
-      value: c.id,
-      label: c.name,
-    })) || [];
+  const countryOptions = (countriesData || []).map((c) => ({
+    value: c.id,
+    label: c.name,
+  }));
 
   useEffect(() => {
     reset(editingItem || { name: '', country_id: '' });
@@ -76,10 +72,10 @@ const AddEditProvinceDialog = ({
       });
       onFinish(true);
     },
-    onError: (err: any) => {
+    onError: (err) => {
       toast({
         title: 'Error',
-        description: err.response?.data?.error || 'Failed to save province.',
+        description: getErrorMessage(err, 'Failed to save province.'),
         variant: 'destructive',
       });
     },
@@ -99,12 +95,18 @@ const AddEditProvinceDialog = ({
           </div>
           <div>
             <Label>Country</Label>
-            <Select
-              options={countryOptions}
-              value={selectedCountryId}
-              onChange={(value) => setValue('country_id', value)}
-              placeholder="Select country..."
-              className="mt-1"
+            <Controller
+              name="country_id"
+              control={control}
+              render={({ field }) => (
+                <Select
+                  options={countryOptions}
+                  value={field.value}
+                  onChange={field.onChange}
+                  placeholder="Select country..."
+                  className="mt-1"
+                />
+              )}
             />
             {errors.country_id && (
               <p className="text-red-500 text-xs mt-1">{errors.country_id.message}</p>

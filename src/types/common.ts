@@ -17,6 +17,11 @@ export interface ListParams {
    * The grid pages rely on this and page client-side via AG Grid instead.
    */
   all?: boolean;
+  /** Parent-scoping filters used by the location endpoints. */
+  country_id?: string;
+  province_id?: string;
+  city_id?: string;
+  area_id?: string;
 }
 
 /** Mirrors `helpers.PaginationMeta` in the Go backend. */

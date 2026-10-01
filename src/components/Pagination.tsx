@@ -2,22 +2,35 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
+/** Page slot: a page number, or an ellipsis marker. */
+type PageSlot = number | 'ellipsis-start' | 'ellipsis-end';
+
+export interface PaginationProps {
+  currentPage: number;
+  totalPages: number;
+  total: number;
+  /** Page size, matching the backend `limit`. */
+  limit: number;
+  onPageChange: (page: number) => void;
+  className?: string;
+}
+
 const Pagination = ({
   currentPage,
   totalPages,
   total,
   limit,
   onPageChange,
-  className = ""
-}) => {
+  className = '',
+}: PaginationProps) => {
   if (!totalPages || totalPages <= 0) return null;
 
-  const startItem = ((currentPage - 1) * limit) + 1;
+  const startItem = (currentPage - 1) * limit + 1;
   const endItem = Math.min(currentPage * limit, total);
 
   // Generate page numbers with ellipsis
-  const getPageNumbers = () => {
-    const pages = [];
+  const getPageNumbers = (): PageSlot[] => {
+    const pages: PageSlot[] = [];
     const maxPagesToShow = 7; // Maximum number of page buttons to show
 
     if (totalPages <= maxPagesToShow) {
@@ -57,7 +70,9 @@ const Pagination = ({
   const pageNumbers = getPageNumbers();
 
   return (
-    <div className={`flex items-center justify-between mt-6 pt-4 border-t border-slate-200 ${className}`}>
+    <div
+      className={`flex items-center justify-between mt-6 pt-4 border-t border-slate-200 ${className}`}
+    >
       <div className="text-sm text-slate-600">
         Menampilkan {startItem} - {endItem} dari {total} data
       </div>
@@ -74,12 +89,9 @@ const Pagination = ({
 
         <div className="flex items-center gap-1">
           {pageNumbers.map((page) => {
-            if (typeof page === 'string' && page.startsWith('ellipsis')) {
+            if (typeof page !== 'number') {
               return (
-                <span
-                  key={page}
-                  className="px-2 text-slate-400 select-none"
-                >
+                <span key={page} className="px-2 text-slate-400 select-none">
                   ...
                 </span>
               );
@@ -88,10 +100,10 @@ const Pagination = ({
             return (
               <Button
                 key={page}
-                variant={currentPage === page ? "default" : "outline"}
+                variant={currentPage === page ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => onPageChange(page)}
-                className={currentPage === page ? "bg-blue-900 hover:bg-blue-800" : ""}
+                className={currentPage === page ? 'bg-blue-900 hover:bg-blue-800' : ''}
               >
                 {page}
               </Button>

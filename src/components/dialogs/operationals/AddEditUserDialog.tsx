@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/dialog';
 import { userSchemaForEdit, userSchemaWithPasswordConfirmation } from '@/utils/validations/User';
 import { useToast } from '@/components/ui/use-toast';
+import { getErrorMessage } from '@/utils/getErrorMessage';
 import { USER_ROLES } from '@/utils/constants';
 import { Save, Loader2 } from 'lucide-react';
 import type { z } from 'zod';
@@ -78,10 +79,10 @@ const AddEditUserDialog = ({ isOpen, onClose, editingUser, onFinish }: AddEditUs
       });
       onFinishing();
     },
-    onError: (error: any) => {
+    onError: (error) => {
       toast({
         title: 'Error',
-        description: error.response?.data?.error || 'Gagal menambahkan user.',
+        description: getErrorMessage(error, 'Gagal menambahkan user.'),
         variant: 'destructive',
       });
     },
@@ -100,10 +101,10 @@ const AddEditUserDialog = ({ isOpen, onClose, editingUser, onFinish }: AddEditUs
       });
       onFinishing();
     },
-    onError: (error: any) => {
+    onError: (error) => {
       toast({
         title: 'Error',
-        description: error.response?.data?.error || 'Gagal memperbarui user.',
+        description: getErrorMessage(error, 'Gagal memperbarui user.'),
         variant: 'destructive',
       });
     },
@@ -119,12 +120,12 @@ const AddEditUserDialog = ({ isOpen, onClose, editingUser, onFinish }: AddEditUs
     onClose();
   };
 
-  const onHandleSubmit = async (data: any) => {
+  const onHandleSubmit = async (data: AddEditUserFormValues) => {
     if (editingUser) {
-      const payload = { ...data } as UserFormEdit;
+      const payload: UserFormEdit = { ...data };
       if (!payload.password) {
-        delete (payload as any).password;
-        delete (payload as any).password_confirmation;
+        delete payload.password;
+        delete payload.password_confirmation;
       }
       updateMutation.mutate({ id: editingUser.id, data: payload });
     } else {

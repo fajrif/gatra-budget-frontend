@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { countrySchema } from '@/utils/validations/Country';
 import { useToast } from '@/components/ui/use-toast';
+import { getErrorMessage } from '@/utils/getErrorMessage';
 import { Save, Loader2 } from 'lucide-react';
 import type { z } from 'zod';
 
@@ -56,10 +57,10 @@ const AddEditCountryDialog = ({
       });
       onFinish(true);
     },
-    onError: (err: any) => {
+    onError: (err) => {
       toast({
         title: 'Error',
-        description: err.response?.data?.error || 'Failed to save country.',
+        description: getErrorMessage(err, 'Failed to save country.'),
         variant: 'destructive',
       });
     },

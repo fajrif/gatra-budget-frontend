@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/dialog';
 import { areaSchema } from '@/utils/validations/Area';
 import { useToast } from '@/components/ui/use-toast';
+import { getErrorMessage } from '@/utils/getErrorMessage';
 import { Save, Loader2 } from 'lucide-react';
 import type { z } from 'zod';
 
@@ -71,10 +72,10 @@ const AddEditAreaDialog = ({ isOpen, onClose, editingItem, onFinish }: AddEditAr
       });
       onFinish(true);
     },
-    onError: (err: any) => {
+    onError: (err) => {
       toast({
         title: 'Error',
-        description: err.response?.data?.error || 'Failed to save area.',
+        description: getErrorMessage(err, 'Failed to save area.'),
         variant: 'destructive',
       });
     },
