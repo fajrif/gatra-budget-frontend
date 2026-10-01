@@ -1,10 +1,17 @@
+export interface PixelCrop {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
 /**
  * Create a cropped image from the source image and crop area
- * @param {string} imageSrc - Source image URL or data URL
- * @param {object} pixelCrop - Crop area in pixels
- * @returns {Promise<Blob>} Cropped image as blob
+ * @param imageSrc - Source image URL or data URL
+ * @param pixelCrop - Crop area in pixels
+ * @returns Cropped image as blob
  */
-export const getCroppedImg = async (imageSrc, pixelCrop) => {
+export const getCroppedImg = async (imageSrc: string, pixelCrop: PixelCrop): Promise<Blob> => {
   const image = await createImage(imageSrc);
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
@@ -27,27 +34,30 @@ export const getCroppedImg = async (imageSrc, pixelCrop) => {
     0,
     0,
     pixelCrop.width,
-    pixelCrop.height
+    pixelCrop.height,
   );
 
   // Convert canvas to blob
   return new Promise((resolve, reject) => {
-    canvas.toBlob((blob) => {
-      if (!blob) {
-        reject(new Error('Canvas is empty'));
-        return;
-      }
-      resolve(blob);
-    }, 'image/jpeg', 0.95);
+    canvas.toBlob(
+      (blob) => {
+        if (!blob) {
+          reject(new Error('Canvas is empty'));
+          return;
+        }
+        resolve(blob);
+      },
+      'image/jpeg',
+      0.95,
+    );
   });
 };
 
 /**
  * Create an image element from source
- * @param {string} url - Image URL or data URL
- * @returns {Promise<HTMLImageElement>}
+ * @param url - Image URL or data URL
  */
-const createImage = (url) =>
+const createImage = (url: string): Promise<HTMLImageElement> =>
   new Promise((resolve, reject) => {
     const image = new Image();
     image.addEventListener('load', () => resolve(image));

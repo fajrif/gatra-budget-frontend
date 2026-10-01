@@ -1,9 +1,9 @@
 /**
  * Get full asset URL by concatenating base URL with relative path
- * @param {string} assetUrl - Relative asset URL path
- * @returns {string} Full asset URL
+ * @param assetUrl - Relative asset URL path
+ * @returns Full asset URL
  */
-export const getAssetUrl = (assetUrl) => {
+export const getAssetUrl = (assetUrl: string | null | undefined): string => {
   if (!assetUrl) return '';
 
   // If URL is already absolute, return as is
@@ -22,12 +22,16 @@ export const getAssetUrl = (assetUrl) => {
   return `${cleanBaseUrl}/${cleanAssetUrl}`;
 };
 
+export interface FileValidationResult {
+  valid: boolean;
+  error: string | null;
+}
+
 /**
  * Validate image file (JPEG/PNG, max 5MB)
- * @param {File} file - File to validate
- * @returns {object} { valid: boolean, error: string }
+ * @param file - File to validate
  */
-export const validateImageFile = (file) => {
+export const validateImageFile = (file: File | null | undefined): FileValidationResult => {
   if (!file) return { valid: true, error: null };
 
   const validTypes = ['image/jpeg', 'image/png'];
@@ -36,14 +40,14 @@ export const validateImageFile = (file) => {
   if (!validTypes.includes(file.type)) {
     return {
       valid: false,
-      error: 'File harus berupa JPEG atau PNG.'
+      error: 'File harus berupa JPEG atau PNG.',
     };
   }
 
   if (file.size > maxSize) {
     return {
       valid: false,
-      error: 'File tidak boleh lebih dari 5MB.'
+      error: 'File tidak boleh lebih dari 5MB.',
     };
   }
 
@@ -52,10 +56,9 @@ export const validateImageFile = (file) => {
 
 /**
  * Validate PDF file (max 10MB)
- * @param {File} file - File to validate
- * @returns {object} { valid: boolean, error: string }
+ * @param file - File to validate
  */
-export const validatePdfFile = (file) => {
+export const validatePdfFile = (file: File | null | undefined): FileValidationResult => {
   if (!file) return { valid: true, error: null };
 
   const validTypes = ['application/pdf'];
@@ -64,14 +67,14 @@ export const validatePdfFile = (file) => {
   if (!validTypes.includes(file.type)) {
     return {
       valid: false,
-      error: 'File harus berupa PDF.'
+      error: 'File harus berupa PDF.',
     };
   }
 
   if (file.size > maxSize) {
     return {
       valid: false,
-      error: 'File tidak boleh lebih dari 10MB.'
+      error: 'File tidak boleh lebih dari 10MB.',
     };
   }
 
@@ -80,10 +83,9 @@ export const validatePdfFile = (file) => {
 
 /**
  * Extract filename from URL
- * @param {string} url - URL to extract filename from
- * @returns {string} Filename
+ * @param url - URL to extract filename from
  */
-export const getFilenameFromUrl = (url) => {
+export const getFilenameFromUrl = (url: string | null | undefined): string => {
   if (!url) return '';
   const parts = url.split('/');
   return parts[parts.length - 1];

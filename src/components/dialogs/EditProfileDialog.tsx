@@ -7,25 +7,53 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { updateProfileSchema } from "@/utils/validations/User";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import { updateProfileSchema } from '@/utils/validations/User';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/components/ui/use-toast';
+import { getErrorMessage } from '@/utils/getErrorMessage';
+import type { z } from 'zod';
+import type { UpdateMeRequest, User } from '@/types';
 
-const EditProfileDialog = ({ isOpen, onClose, user, onFinish }) => {
+export type UpdateProfileFormValues = z.infer<typeof updateProfileSchema>;
+
+export interface EditProfileDialogProps {
+  isOpen: boolean;
+  onClose: () => void;
+  user: User | null;
+  /** Called after a successful save; `true` when the password was changed. */
+  onFinish: (passwordChanged: boolean) => void;
+}
+
+const EditProfileDialog = ({ isOpen, onClose, user, onFinish }: EditProfileDialogProps) => {
   const navigate = useNavigate();
   const { logout } = useAuth();
   const { toast } = useToast();
 
-  const initialData = useMemo(() => ({
-    full_name: user?.full_name || '',
-    password: '',
-    password_confirmation: '',
-  }), [user]);
+  const initialData = useMemo(
+    () => ({
+      full_name: user?.full_name || '',
+      password: '',
+      password_confirmation: '',
+    }),
+    [user],
+  );
 
-  const { register, handleSubmit, formState: { errors }, reset, watch } = useForm({
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+    watch,
+  } = useForm<UpdateProfileFormValues>({
     resolver: zodResolver(updateProfileSchema),
-    defaultValues: initialData
+    defaultValues: initialData,
   });
 
   const password = watch('password');
@@ -37,15 +65,14 @@ const EditProfileDialog = ({ isOpen, onClose, user, onFinish }) => {
   }, [user, reset, initialData]);
 
   const updateMutation = useMutation({
-    mutationFn: async (data) => {
+    mutationFn: async (data: UpdateProfileFormValues) => {
       // Only send non-empty fields
-      const payload = {};
+      const payload: UpdateMeRequest = { full_name: '' };
       if (data.full_name && data.full_name !== user?.full_name) {
         payload.full_name = data.full_name;
       }
       if (data.password && data.password.length > 0) {
         payload.password = data.password;
-        payload.password_confirmation = data.password_confirmation;
       }
 
       const response = await authAPI.updateMe(payload);
@@ -53,9 +80,11 @@ const EditProfileDialog = ({ isOpen, onClose, user, onFinish }) => {
     },
     onSuccess: ({ passwordChanged }) => {
       toast({
-        title: "Success",
-        description: passwordChanged ? "Profile berhasil diperbarui. Silakan login kembali." : "Profile berhasil diperbarui.",
-        variant: "success",
+        title: 'Success',
+        description: passwordChanged
+          ? 'Profile berhasil diperbarui. Silakan login kembali.'
+          : 'Profile berhasil diperbarui.',
+        variant: 'success',
       });
       reset(initialData);
       onFinish(passwordChanged);
@@ -71,11 +100,11 @@ const EditProfileDialog = ({ isOpen, onClose, user, onFinish }) => {
     onError: (error) => {
       console.error('Failed to update profile:', error);
       toast({
-        title: "Error",
-        description: error.response?.data?.error || "Gagal memperbarui profile.",
-        variant: "destructive",
+        title: 'Error',
+        description: getErrorMessage(error, 'Gagal memperbarui profile.'),
+        variant: 'destructive',
       });
-    }
+    },
   });
 
   const onClosing = () => {
@@ -83,7 +112,7 @@ const EditProfileDialog = ({ isOpen, onClose, user, onFinish }) => {
     onClose();
   };
 
-  const onHandleSubmit = async (data) => {
+  const onHandleSubmit = async (data: UpdateProfileFormValues) => {
     updateMutation.mutate(data);
   };
 
@@ -98,38 +127,48 @@ const EditProfileDialog = ({ isOpen, onClose, user, onFinish }) => {
             <div className="space-y-2">
               <Label htmlFor="full_name">Nama Lengkap</Label>
               <Input
-                name="full_name"
+                id="full_name"
                 placeholder="Masukkan nama lengkap"
-                {...register("full_name")}
+                {...register('full_name')}
               />
-              {errors.full_name && <p className="text-red-500 text-sm">{errors.full_name.message}</p>}
+              {errors.full_name && (
+                <p className="text-red-500 text-sm">{errors.full_name.message}</p>
+              )}
             </div>
 
             <div className="border-t border-slate-200 pt-4 mt-2">
-              <p className="text-sm text-slate-600 mb-4">Kosongkan jika tidak ingin mengubah password</p>
+              <p className="text-sm text-slate-600 mb-4">
+                Kosongkan jika tidak ingin mengubah password
+              </p>
 
               <div className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="password">Password Baru</Label>
                   <Input
-                    name="password"
+                    id="password"
                     type="password"
                     placeholder="Masukkan password baru"
-                    {...register("password")}
+                    {...register('password')}
                   />
-                  {errors.password && <p className="text-red-500 text-sm">{errors.password.message}</p>}
+                  {errors.password && (
+                    <p className="text-red-500 text-sm">{errors.password.message}</p>
+                  )}
                 </div>
 
                 {password && password.length > 0 && (
                   <div className="space-y-2">
                     <Label htmlFor="password_confirmation">Konfirmasi Password</Label>
                     <Input
-                      name="password_confirmation"
+                      id="password_confirmation"
                       type="password"
                       placeholder="Masukkan konfirmasi password"
-                      {...register("password_confirmation")}
+                      {...register('password_confirmation')}
                     />
-                    {errors.password_confirmation && <p className="text-red-500 text-sm">{errors.password_confirmation.message}</p>}
+                    {errors.password_confirmation && (
+                      <p className="text-red-500 text-sm">
+                        {errors.password_confirmation.message}
+                      </p>
+                    )}
                   </div>
                 )}
               </div>
