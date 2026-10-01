@@ -8,16 +8,22 @@ import { Button } from '@/components/ui/button';
 import { Plus, MapPin } from 'lucide-react';
 import { useConfirm } from '@/hooks/useConfirm';
 import { useToast } from '@/components/ui/use-toast';
-import AddEditAreaDialog from '@/components/dialogs/masters/AddEditAreaDialog';
+import AddEditAreaDialog, {
+  type AreaFormValues,
+} from '@/components/dialogs/masters/AddEditAreaDialog';
 import { createAreasColumnDefs, defaultColDef } from '@/config/areasGridColumns';
+import { getErrorMessage } from '@/utils/getErrorMessage';
+import type { Area } from '@/types';
+
+type AreaEditingItem = AreaFormValues & { id: string };
 
 const Areas = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const confirm = useConfirm();
-  const gridRef = useRef(null);
+  const gridRef = useRef<AgGridReact | null>(null);
   const [showDialog, setShowDialog] = useState(false);
-  const [editingItem, setEditingItem] = useState(null);
+  const [editingItem, setEditingItem] = useState<AreaEditingItem | null>(null);
 
   const { data, isLoading } = useQuery({
     queryKey: ['areas'],
@@ -26,28 +32,42 @@ const Areas = () => {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id) => areasAPI.delete(id),
+    mutationFn: (id: string) => areasAPI.delete(id),
     onSuccess: () => {
-      queryClient.invalidateQueries(['areas']);
+      queryClient.invalidateQueries({ queryKey: ['areas'] });
       toast({ title: 'Success', description: 'Area deleted.', variant: 'success' });
     },
     onError: (err) => {
-      toast({ title: 'Error', description: err.response?.data?.error || 'Failed to delete area.', variant: 'destructive' });
+      toast({
+        title: 'Error',
+        description: getErrorMessage(err, 'Failed to delete area.'),
+        variant: 'destructive',
+      });
     },
   });
 
-  const handleDelete = useCallback(async (row) => {
-    const ok = await confirm({ message: `Delete area "${row.name}"?`, variant: 'danger' });
-    if (ok) deleteMutation.mutate(row.id);
-  }, [confirm, deleteMutation]);
+  const handleDelete = useCallback(
+    async (row: Area) => {
+      const ok = await confirm({ message: `Delete area "${row.name}"?`, variant: 'danger' });
+      if (ok) deleteMutation.mutate(row.id);
+    },
+    [confirm, deleteMutation],
+  );
 
-  const columnDefs = useMemo(() => createAreasColumnDefs({
-    onEdit: (row) => { setEditingItem(row); setShowDialog(true); },
-    onDelete: handleDelete,
-  }), [handleDelete]);
+  const columnDefs = useMemo(
+    () =>
+      createAreasColumnDefs({
+        onEdit: (row: Area) => {
+          setEditingItem(row);
+          setShowDialog(true);
+        },
+        onDelete: handleDelete,
+      }),
+    [handleDelete],
+  );
 
-  const finishSubmit = (shouldRefresh) => {
-    if (shouldRefresh) queryClient.invalidateQueries(['areas']);
+  const finishSubmit = (shouldRefresh: boolean) => {
+    if (shouldRefresh) queryClient.invalidateQueries({ queryKey: ['areas'] });
     setShowDialog(false);
     setEditingItem(null);
   };
@@ -70,10 +90,17 @@ const Areas = () => {
               </div>
               <div>
                 <h3 className="font-semibold text-slate-900 mb-2">About Areas</h3>
-                <p className="text-sm text-slate-700 mb-3">Area reference data used across the application.</p>
+                <p className="text-sm text-slate-700 mb-3">
+                  Area reference data used across the application.
+                </p>
                 <div className="space-y-1 text-sm text-slate-600">
-                  <p>• <strong className="font-semibold">Name:</strong> Area / district name</p>
-                  <p>• <strong className="font-semibold">City ID:</strong> reference to <code>cities</code></p>
+                  <p>
+                    • <strong className="font-semibold">Name:</strong> Area / district name
+                  </p>
+                  <p>
+                    • <strong className="font-semibold">City ID:</strong> reference to{' '}
+                    <code>cities</code>
+                  </p>
                 </div>
               </div>
             </div>
@@ -82,7 +109,10 @@ const Areas = () => {
         <Card className="border-none shadow-lg">
           <CardHeader className="border-b border-slate-100">
             <div className="flex justify-end items-center">
-              <Button onClick={() => setShowDialog(true)} className="bg-blue-900 hover:bg-blue-800">
+              <Button
+                onClick={() => setShowDialog(true)}
+                className="bg-blue-900 hover:bg-blue-800"
+              >
                 <Plus className="w-4 h-4 mr-2" />
                 Add Area
               </Button>
@@ -91,7 +121,7 @@ const Areas = () => {
           <CardContent className="pt-6">
             {isLoading ? (
               <div className="text-center py-8">Loading...</div>
-            ) : data.length === 0 ? (
+            ) : (data?.length ?? 0) === 0 ? (
               <div className="text-center py-8 text-slate-500">
                 No areas yet. Add your first area.
               </div>
@@ -122,7 +152,7 @@ const Areas = () => {
       <AddEditAreaDialog
         isOpen={showDialog}
         onClose={() => finishSubmit(false)}
-        editingItem={editingItem}
+        editingItem={editingItem ?? undefined}
         onFinish={finishSubmit}
       />
     </div>

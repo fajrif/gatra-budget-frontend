@@ -8,16 +8,22 @@ import { Button } from '@/components/ui/button';
 import { Plus, Globe } from 'lucide-react';
 import { useConfirm } from '@/hooks/useConfirm';
 import { useToast } from '@/components/ui/use-toast';
-import AddEditCountryDialog from '@/components/dialogs/masters/AddEditCountryDialog';
+import AddEditCountryDialog, {
+  type CountryFormValues,
+} from '@/components/dialogs/masters/AddEditCountryDialog';
 import { createCountriesColumnDefs, defaultColDef } from '@/config/countriesGridColumns';
+import { getErrorMessage } from '@/utils/getErrorMessage';
+import type { Country } from '@/types';
+
+type CountryEditingItem = CountryFormValues & { id: string };
 
 const Countries = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const confirm = useConfirm();
-  const gridRef = useRef(null);
+  const gridRef = useRef<AgGridReact | null>(null);
   const [showDialog, setShowDialog] = useState(false);
-  const [editingItem, setEditingItem] = useState(null);
+  const [editingItem, setEditingItem] = useState<CountryEditingItem | null>(null);
 
   const { data, isLoading } = useQuery({
     queryKey: ['countries'],
@@ -26,28 +32,42 @@ const Countries = () => {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id) => countriesAPI.delete(id),
+    mutationFn: (id: string) => countriesAPI.delete(id),
     onSuccess: () => {
-      queryClient.invalidateQueries(['countries']);
+      queryClient.invalidateQueries({ queryKey: ['countries'] });
       toast({ title: 'Success', description: 'Country deleted.', variant: 'success' });
     },
     onError: (err) => {
-      toast({ title: 'Error', description: err.response?.data?.error || 'Failed to delete country.', variant: 'destructive' });
+      toast({
+        title: 'Error',
+        description: getErrorMessage(err, 'Failed to delete country.'),
+        variant: 'destructive',
+      });
     },
   });
 
-  const handleDelete = useCallback(async (row) => {
-    const ok = await confirm({ message: `Delete country "${row.name}"?`, variant: 'danger' });
-    if (ok) deleteMutation.mutate(row.id);
-  }, [confirm, deleteMutation]);
+  const handleDelete = useCallback(
+    async (row: Country) => {
+      const ok = await confirm({ message: `Delete country "${row.name}"?`, variant: 'danger' });
+      if (ok) deleteMutation.mutate(row.id);
+    },
+    [confirm, deleteMutation],
+  );
 
-  const columnDefs = useMemo(() => createCountriesColumnDefs({
-    onEdit: (row) => { setEditingItem(row); setShowDialog(true); },
-    onDelete: handleDelete,
-  }), [handleDelete]);
+  const columnDefs = useMemo(
+    () =>
+      createCountriesColumnDefs({
+        onEdit: (row: Country) => {
+          setEditingItem(row);
+          setShowDialog(true);
+        },
+        onDelete: handleDelete,
+      }),
+    [handleDelete],
+  );
 
-  const finishSubmit = (shouldRefresh) => {
-    if (shouldRefresh) queryClient.invalidateQueries(['countries']);
+  const finishSubmit = (shouldRefresh: boolean) => {
+    if (shouldRefresh) queryClient.invalidateQueries({ queryKey: ['countries'] });
     setShowDialog(false);
     setEditingItem(null);
   };
@@ -69,10 +89,16 @@ const Countries = () => {
               </div>
               <div>
                 <h3 className="font-semibold text-slate-900 mb-2">About Countries</h3>
-                <p className="text-sm text-slate-700 mb-3">Country reference data used across the application.</p>
+                <p className="text-sm text-slate-700 mb-3">
+                  Country reference data used across the application.
+                </p>
                 <div className="space-y-1 text-sm text-slate-600">
-                  <p>• <strong className="font-semibold">Code:</strong> ISO 3166-1 alpha-2</p>
-                  <p>• <strong className="font-semibold">Name:</strong> Country name</p>
+                  <p>
+                    • <strong className="font-semibold">Code:</strong> ISO 3166-1 alpha-2
+                  </p>
+                  <p>
+                    • <strong className="font-semibold">Name:</strong> Country name
+                  </p>
                 </div>
               </div>
             </div>
@@ -81,7 +107,10 @@ const Countries = () => {
         <Card className="border-none shadow-lg">
           <CardHeader className="border-b border-slate-100">
             <div className="flex justify-end items-center">
-              <Button onClick={() => setShowDialog(true)} className="bg-blue-900 hover:bg-blue-800">
+              <Button
+                onClick={() => setShowDialog(true)}
+                className="bg-blue-900 hover:bg-blue-800"
+              >
                 <Plus className="w-4 h-4 mr-2" />
                 Add Country
               </Button>
@@ -90,7 +119,7 @@ const Countries = () => {
           <CardContent className="pt-6">
             {isLoading ? (
               <div className="text-center py-8">Loading...</div>
-            ) : data.length === 0 ? (
+            ) : (data?.length ?? 0) === 0 ? (
               <div className="text-center py-8 text-slate-500">
                 No countries yet. Add your first country.
               </div>
@@ -121,7 +150,7 @@ const Countries = () => {
       <AddEditCountryDialog
         isOpen={showDialog}
         onClose={() => finishSubmit(false)}
-        editingItem={editingItem}
+        editingItem={editingItem ?? undefined}
         onFinish={finishSubmit}
       />
     </div>

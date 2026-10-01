@@ -74,7 +74,7 @@ const ActionMenuCellRenderer = <TData extends { id: string }>(
     e.stopPropagation();
     setIsOpen(false);
     if (await confirm({ message: 'Yakin ingin menghapus data ini?' })) {
-      if (onDelete && data) onDelete(data.id);
+      if (onDelete && data) onDelete(data);
     }
   };
 

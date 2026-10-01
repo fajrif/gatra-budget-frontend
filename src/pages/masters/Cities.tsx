@@ -8,16 +8,22 @@ import { Button } from '@/components/ui/button';
 import { Plus, Building } from 'lucide-react';
 import { useConfirm } from '@/hooks/useConfirm';
 import { useToast } from '@/components/ui/use-toast';
-import AddEditCityDialog from '@/components/dialogs/masters/AddEditCityDialog';
+import AddEditCityDialog, {
+  type CityFormValues,
+} from '@/components/dialogs/masters/AddEditCityDialog';
 import { createCitiesColumnDefs, defaultColDef } from '@/config/citiesGridColumns';
+import { getErrorMessage } from '@/utils/getErrorMessage';
+import type { City } from '@/types';
+
+type CityEditingItem = CityFormValues & { id: string };
 
 const Cities = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const confirm = useConfirm();
-  const gridRef = useRef(null);
+  const gridRef = useRef<AgGridReact | null>(null);
   const [showDialog, setShowDialog] = useState(false);
-  const [editingItem, setEditingItem] = useState(null);
+  const [editingItem, setEditingItem] = useState<CityEditingItem | null>(null);
 
   const { data, isLoading } = useQuery({
     queryKey: ['cities'],
@@ -26,28 +32,42 @@ const Cities = () => {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id) => citiesAPI.delete(id),
+    mutationFn: (id: string) => citiesAPI.delete(id),
     onSuccess: () => {
-      queryClient.invalidateQueries(['cities']);
+      queryClient.invalidateQueries({ queryKey: ['cities'] });
       toast({ title: 'Success', description: 'City deleted.', variant: 'success' });
     },
     onError: (err) => {
-      toast({ title: 'Error', description: err.response?.data?.error || 'Failed to delete city.', variant: 'destructive' });
+      toast({
+        title: 'Error',
+        description: getErrorMessage(err, 'Failed to delete city.'),
+        variant: 'destructive',
+      });
     },
   });
 
-  const handleDelete = useCallback(async (row) => {
-    const ok = await confirm({ message: `Delete city "${row.name}"?`, variant: 'danger' });
-    if (ok) deleteMutation.mutate(row.id);
-  }, [confirm, deleteMutation]);
+  const handleDelete = useCallback(
+    async (row: City) => {
+      const ok = await confirm({ message: `Delete city "${row.name}"?`, variant: 'danger' });
+      if (ok) deleteMutation.mutate(row.id);
+    },
+    [confirm, deleteMutation],
+  );
 
-  const columnDefs = useMemo(() => createCitiesColumnDefs({
-    onEdit: (row) => { setEditingItem(row); setShowDialog(true); },
-    onDelete: handleDelete,
-  }), [handleDelete]);
+  const columnDefs = useMemo(
+    () =>
+      createCitiesColumnDefs({
+        onEdit: (row: City) => {
+          setEditingItem(row);
+          setShowDialog(true);
+        },
+        onDelete: handleDelete,
+      }),
+    [handleDelete],
+  );
 
-  const finishSubmit = (shouldRefresh) => {
-    if (shouldRefresh) queryClient.invalidateQueries(['cities']);
+  const finishSubmit = (shouldRefresh: boolean) => {
+    if (shouldRefresh) queryClient.invalidateQueries({ queryKey: ['cities'] });
     setShowDialog(false);
     setEditingItem(null);
   };
@@ -70,10 +90,17 @@ const Cities = () => {
               </div>
               <div>
                 <h3 className="font-semibold text-slate-900 mb-2">About Cities</h3>
-                <p className="text-sm text-slate-700 mb-3">City reference data used across the application.</p>
+                <p className="text-sm text-slate-700 mb-3">
+                  City reference data used across the application.
+                </p>
                 <div className="space-y-1 text-sm text-slate-600">
-                  <p>• <strong className="font-semibold">Name:</strong> City name</p>
-                  <p>• <strong className="font-semibold">Province ID:</strong> reference to <code>provinces</code></p>
+                  <p>
+                    • <strong className="font-semibold">Name:</strong> City name
+                  </p>
+                  <p>
+                    • <strong className="font-semibold">Province ID:</strong> reference to{' '}
+                    <code>provinces</code>
+                  </p>
                 </div>
               </div>
             </div>
@@ -82,7 +109,10 @@ const Cities = () => {
         <Card className="border-none shadow-lg">
           <CardHeader className="border-b border-slate-100">
             <div className="flex justify-end items-center">
-              <Button onClick={() => setShowDialog(true)} className="bg-blue-900 hover:bg-blue-800">
+              <Button
+                onClick={() => setShowDialog(true)}
+                className="bg-blue-900 hover:bg-blue-800"
+              >
                 <Plus className="w-4 h-4 mr-2" />
                 Add City
               </Button>
@@ -91,7 +121,7 @@ const Cities = () => {
           <CardContent className="pt-6">
             {isLoading ? (
               <div className="text-center py-8">Loading...</div>
-            ) : data.length === 0 ? (
+            ) : (data?.length ?? 0) === 0 ? (
               <div className="text-center py-8 text-slate-500">
                 No cities yet. Add your first city.
               </div>
@@ -122,7 +152,7 @@ const Cities = () => {
       <AddEditCityDialog
         isOpen={showDialog}
         onClose={() => finishSubmit(false)}
-        editingItem={editingItem}
+        editingItem={editingItem ?? undefined}
         onFinish={finishSubmit}
       />
     </div>

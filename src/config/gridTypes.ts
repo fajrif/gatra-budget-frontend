@@ -7,6 +7,6 @@ import type { ColDef } from 'ag-grid-community';
  */
 export interface GridActionHandlers<TData> {
   onEdit: (row: TData) => void;
-  onDelete: (id: string) => void;
+  onDelete: (row: TData) => void;
   onView?: (row: TData) => void;
 }

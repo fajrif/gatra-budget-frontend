@@ -11,7 +11,7 @@ declare module 'ag-grid-community' {
       /** Row edit handler supplied by the hosting page. */
       onEdit?: (row: TData) => void;
       /** Row delete handler supplied by the hosting page. */
-      onDelete?: (id: string) => void;
+      onDelete?: (row: TData) => void;
       /** Row view handler, where the resource supports a detail view. */
       onView?: (row: TData) => void;
       /** Tooltip copy for `TooltipCellRenderer`; defaults to the cell value. */
