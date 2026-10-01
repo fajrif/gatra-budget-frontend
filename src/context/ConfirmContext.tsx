@@ -1,15 +1,43 @@
-import { createContext, useState, useCallback, useRef } from 'react';
+import { createContext, useState, useCallback, useRef, type ReactNode } from 'react';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
 
+export type ConfirmVariant = 'danger' | 'default';
+
+export interface ConfirmOptions {
+  title?: string;
+  message?: string;
+  variant?: ConfirmVariant;
+  confirmText?: string;
+  cancelText?: string;
+}
+
+export type ConfirmFn = (options?: ConfirmOptions) => Promise<boolean>;
+
+interface ConfirmState {
+  open: boolean;
+  title: string;
+  message: string;
+  variant: ConfirmVariant;
+  confirmText: string;
+  cancelText: string;
+}
+
 // eslint-disable-next-line react-refresh/only-export-components
-export const ConfirmContext = createContext(null);
+export const ConfirmContext = createContext<ConfirmFn | null>(null);
 
-export const ConfirmProvider = ({ children }) => {
-  const [state, setState] = useState({ open: false, title: '', message: '', variant: 'danger', confirmText: 'Ya', cancelText: 'Batal' });
-  const resolveRef = useRef(null);
+export const ConfirmProvider = ({ children }: { children: ReactNode }) => {
+  const [state, setState] = useState<ConfirmState>({
+    open: false,
+    title: '',
+    message: '',
+    variant: 'danger',
+    confirmText: 'Ya',
+    cancelText: 'Batal',
+  });
+  const resolveRef = useRef<((value: boolean) => void) | null>(null);
 
-  const confirm = useCallback((options) => {
-    return new Promise((resolve) => {
+  const confirm = useCallback<ConfirmFn>((options = {}) => {
+    return new Promise<boolean>((resolve) => {
       resolveRef.current = resolve;
       setState({
         open: true,

@@ -1,9 +1,18 @@
 import toast from 'react-hot-toast';
 
+export type ToastVariant = 'default' | 'success' | 'destructive';
+
+export interface ToastOptions {
+  title?: string;
+  description?: string;
+  variant?: ToastVariant;
+}
+
 export const useToast = () => {
   return {
-    toast: ({ title, description, variant = 'default' }) => {
+    toast: ({ title, description, variant = 'default' }: ToastOptions) => {
       const message = description || title;
+      if (!message) return;
 
       if (variant === 'success') {
         toast.success(message, {
@@ -26,9 +35,10 @@ export const useToast = () => {
             color: '#fff',
             padding: '16px',
             borderRadius: '8px',
+            // Multi-line API errors stay readable instead of collapsing.
+            whiteSpace: 'pre-line',
+            maxWidth: '480px',
           },
-          whiteSpace: 'pre-line',
-          maxWidth: '480px',
         });
       } else {
         toast(message, {

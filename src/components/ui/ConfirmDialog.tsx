@@ -1,5 +1,19 @@
+import type { ReactNode } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+
+export interface ConfirmDialogProps {
+  open: boolean;
+  onConfirm: () => void;
+  onCancel: () => void;
+  title?: string;
+  message?: string;
+  confirmText?: string;
+  cancelText?: string;
+  variant?: string;
+  loading?: boolean;
+  children?: ReactNode;
+}
 
 const ConfirmDialog = ({
   open,
@@ -12,7 +26,7 @@ const ConfirmDialog = ({
   variant = 'danger',
   loading = false,
   children,
-}) => {
+}: ConfirmDialogProps) => {
   return (
     <Dialog open={open} onOpenChange={(o) => { if (!o) onCancel(); }}>
       <DialogContent className="max-w-md">
