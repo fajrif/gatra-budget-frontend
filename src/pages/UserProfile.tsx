@@ -27,17 +27,17 @@ const UserProfile = () => {
     setShowDialog(true);
   };
 
-  const handleFinishEdit = (passwordChanged) => {
+  const handleFinishEdit = (passwordChanged: boolean) => {
     if (!passwordChanged) {
       // Only refresh profile data if password was not changed
       // (if password was changed, user will be logged out)
-      queryClient.invalidateQueries(['userProfile']);
+      queryClient.invalidateQueries({ queryKey: ['userProfile'] });
     }
     setShowDialog(false);
   };
 
   const handlePhotoUploadFinish = () => {
-    queryClient.invalidateQueries(['userProfile']);
+    queryClient.invalidateQueries({ queryKey: ['userProfile'] });
     setShowPhotoDialog(false);
   };
 
@@ -62,7 +62,8 @@ const UserProfile = () => {
               <div>
                 <h3 className="font-semibold text-slate-900 mb-2">Informasi Profil</h3>
                 <p className="text-sm text-slate-700 mb-3">
-                  Halaman ini menampilkan informasi profil Anda. Anda dapat mengubah nama dan password Anda.
+                  Halaman ini menampilkan informasi profil Anda. Anda dapat mengubah nama dan
+                  password Anda.
                 </p>
                 <div className="space-y-1 text-sm text-slate-600">
                   <p>• Nama lengkap dapat diubah kapan saja</p>
@@ -109,9 +110,11 @@ const UserProfile = () => {
                         alt="Profile Photo"
                         className="w-20 h-20 rounded-full object-cover border-2 border-slate-200"
                         onError={(e) => {
-                          e.target.onerror = null;
-                          e.target.style.display = 'none';
-                          e.target.nextSibling.style.display = 'flex';
+                          const img = e.currentTarget;
+                          img.onerror = null;
+                          img.style.display = 'none';
+                          const fallback = img.nextElementSibling as HTMLElement | null;
+                          if (fallback) fallback.style.display = 'flex';
                         }}
                       />
                     ) : null}
@@ -133,13 +136,11 @@ const UserProfile = () => {
                       {profileData?.full_name || 'User'}
                     </h3>
                     <p className="text-slate-500 text-sm mt-1">
-                      {profileData?.role === "admin" ? (
-                        'Administrator memiliki akses penuh ke semua fitur sistem.'
-                      ) : profileData?.role === "user" ? (
-                        'User memiliki akses terbatas sesuai dengan peran yang diberikan.'
-                      ) : (
-                        'Operator memiliki akses untuk mengelola operasi harian sistem.'
-                      )}
+                      {profileData?.role === 'admin'
+                        ? 'Administrator memiliki akses penuh ke semua fitur sistem.'
+                        : profileData?.role === 'user'
+                          ? 'User memiliki akses terbatas sesuai dengan peran yang diberikan.'
+                          : 'Operator memiliki akses untuk mengelola operasi harian sistem.'}
                     </p>
                   </div>
                 </div>
@@ -171,14 +172,16 @@ const UserProfile = () => {
                   </div>
 
                   <div className="flex items-center gap-4">
-                    <div className={getRoleColor(profileData.role) + " w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"}>
+                    <div
+                      className={
+                        getRoleColor(profileData?.role) +
+                        ' w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0'
+                      }
+                    >
                       <Shield className="w-5 h-5" />
                     </div>
                     <div className="flex-1">
-                      <Badge
-                        variant="outline"
-                        className={getRoleColor(profileData.role)}
-                      >
+                      <Badge variant="outline" className={getRoleColor(profileData?.role)}>
                         {profileData?.role}
                       </Badge>
                     </div>
@@ -194,7 +197,7 @@ const UserProfile = () => {
       <EditProfileDialog
         isOpen={showDialog}
         onClose={() => setShowDialog(false)}
-        user={profileData}
+        user={profileData ?? null}
         onFinish={handleFinishEdit}
       />
 

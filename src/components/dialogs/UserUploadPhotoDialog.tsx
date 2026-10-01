@@ -1,6 +1,6 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef, type ChangeEvent } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { api } from '@/api/axios';
+import { uploadAPI } from '@/api/endpoints';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Upload, Trash2, X } from 'lucide-react';
@@ -8,38 +8,61 @@ import { useToast } from '@/components/ui/use-toast';
 import { useConfirm } from '@/hooks/useConfirm';
 import { validateImageFile } from '@/helpers/AssetHelper';
 import Cropper from 'react-easy-crop';
-import { getCroppedImg } from '@/utils/helpers/CropImageHelper';
+import { getCroppedImg, type PixelCrop } from '@/utils/helpers/CropImageHelper';
+import { getErrorMessage } from '@/utils/getErrorMessage';
+import type { UUID } from '@/types';
 
-const UserUploadPhotoDialog = ({ isOpen, onClose, userId, currentPhotoUrl, onFinish }) => {
+interface UserUploadPhotoDialogProps {
+  isOpen: boolean;
+  onClose: () => void;
+  /** Undefined until the profile query resolves; the dialog cannot upload without it. */
+  userId?: UUID;
+  currentPhotoUrl?: string | null;
+  onFinish: () => void;
+}
+
+interface CropPoint {
+  x: number;
+  y: number;
+}
+
+const UserUploadPhotoDialog = ({
+  isOpen,
+  onClose,
+  userId,
+  currentPhotoUrl,
+  onFinish,
+}: UserUploadPhotoDialogProps) => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const confirm = useConfirm();
-  const fileInputRef = useRef(null);
-  const [imageSrc, setImageSrc] = useState(null);
-  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [imageSrc, setImageSrc] = useState<string | null>(null);
+  const [crop, setCrop] = useState<CropPoint>({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
-  const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState<PixelCrop | null>(null);
   const [isUploading, setIsUploading] = useState(false);
 
-  const onCropComplete = useCallback((croppedArea, croppedAreaPixels) => {
+  const onCropComplete = useCallback((_croppedArea: PixelCrop, croppedAreaPixels: PixelCrop) => {
     setCroppedAreaPixels(croppedAreaPixels);
   }, []);
 
-  const handleFileSelect = (e) => {
-    const file = e.target.files[0];
+  const handleFileSelect = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
     if (file) {
       const validation = validateImageFile(file);
       if (validation.valid) {
         const reader = new FileReader();
         reader.addEventListener('load', () => {
-          setImageSrc(reader.result);
+          // readAsDataURL always resolves to a data-URL string.
+          if (typeof reader.result === 'string') setImageSrc(reader.result);
         });
         reader.readAsDataURL(file);
       } else {
         toast({
-          title: "Error",
-          description: validation.error,
-          variant: "destructive",
+          title: 'Error',
+          description: validation.error ?? undefined,
+          variant: 'destructive',
         });
         e.target.value = '';
       }
@@ -49,9 +72,17 @@ const UserUploadPhotoDialog = ({ isOpen, onClose, userId, currentPhotoUrl, onFin
   const handleUpload = async () => {
     if (!imageSrc || !croppedAreaPixels) {
       toast({
-        title: "Error",
-        description: "Silakan pilih dan crop foto terlebih dahulu.",
-        variant: "destructive",
+        title: 'Error',
+        description: 'Silakan pilih dan crop foto terlebih dahulu.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    if (!userId) {
+      toast({
+        title: 'Error',
+        description: 'Gagal mengupload photo.',
+        variant: 'destructive',
       });
       return;
     }
@@ -67,26 +98,22 @@ const UserUploadPhotoDialog = ({ isOpen, onClose, userId, currentPhotoUrl, onFin
       formData.append('file', croppedImageBlob, 'photo.jpg');
 
       // Upload to the server
-      await api.post(`/upload/users/photo/${userId}`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
+      await uploadAPI.upload('users', 'photo', userId, formData);
 
       toast({
-        title: "Success",
-        description: "Photo berhasil diupload.",
-        variant: "success",
+        title: 'Success',
+        description: 'Photo berhasil diupload.',
+        variant: 'success',
       });
 
-      queryClient.invalidateQueries(['userProfile']);
+      queryClient.invalidateQueries({ queryKey: ['userProfile'] });
       onFinish();
       handleClose();
     } catch (error) {
       toast({
-        title: "Error",
-        description: error.response?.data?.error || "Gagal mengupload photo.",
-        variant: "destructive",
+        title: 'Error',
+        description: getErrorMessage(error, 'Gagal mengupload photo.'),
+        variant: 'destructive',
       });
     } finally {
       setIsUploading(false);
@@ -94,31 +121,32 @@ const UserUploadPhotoDialog = ({ isOpen, onClose, userId, currentPhotoUrl, onFin
   };
 
   const deleteMutation = useMutation({
-    mutationFn: async () => {
-      await api.delete(`/upload/users/photo/${userId}`);
+    mutationFn: async (id: UUID) => {
+      await uploadAPI.delete('users', 'photo', id);
     },
     onSuccess: () => {
       toast({
-        title: "Success",
-        description: "Photo berhasil dihapus.",
-        variant: "success",
+        title: 'Success',
+        description: 'Photo berhasil dihapus.',
+        variant: 'success',
       });
-      queryClient.invalidateQueries(['userProfile']);
+      queryClient.invalidateQueries({ queryKey: ['userProfile'] });
       onFinish();
       handleClose();
     },
     onError: (error) => {
       toast({
-        title: "Error",
-        description: error.response?.data?.error || "Gagal menghapus photo.",
-        variant: "destructive",
+        title: 'Error',
+        description: getErrorMessage(error, 'Gagal menghapus photo.'),
+        variant: 'destructive',
       });
-    }
+    },
   });
 
   const handleDelete = async () => {
+    if (!userId) return;
     if (await confirm({ message: 'Apakah Anda yakin ingin menghapus photo?' })) {
-      deleteMutation.mutate();
+      deleteMutation.mutate(userId);
     }
   };
 
@@ -143,12 +171,8 @@ const UserUploadPhotoDialog = ({ isOpen, onClose, userId, currentPhotoUrl, onFin
               {/* File Input */}
               <div className="border-2 border-dashed border-slate-300 rounded-lg p-8 text-center hover:border-blue-500 transition-colors">
                 <Upload className="w-12 h-12 mx-auto text-slate-400 mb-4" />
-                <p className="text-sm text-slate-600 mb-2">
-                  Pilih foto untuk diupload
-                </p>
-                <p className="text-xs text-slate-500 mb-4">
-                  JPEG atau PNG, maksimal 5MB
-                </p>
+                <p className="text-sm text-slate-600 mb-2">Pilih foto untuk diupload</p>
+                <p className="text-xs text-slate-500 mb-4">JPEG atau PNG, maksimal 5MB</p>
                 <input
                   ref={fileInputRef}
                   type="file"
@@ -184,16 +208,16 @@ const UserUploadPhotoDialog = ({ isOpen, onClose, userId, currentPhotoUrl, onFin
 
               {/* Zoom Control */}
               <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-700">
-                  Zoom
-                </label>
+                <label className="text-sm font-medium text-slate-700">Zoom</label>
                 <input
                   type="range"
                   min={1}
                   max={3}
                   step={0.1}
                   value={zoom}
-                  onChange={(e) => setZoom(parseFloat(e.target.value))}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                    setZoom(parseFloat(e.target.value))
+                  }
                   className="w-full"
                 />
               </div>

@@ -1,15 +1,22 @@
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Globe, MapPin, Map, Building, Users } from 'lucide-react';
+import { Globe, MapPin, Map, Building, Users, type LucideIcon } from 'lucide-react';
 
-const quickLinks = [
-  { to: '/countries', icon: Globe, label: 'Countries', color: 'text-blue-600', bg: 'bg-blue-500' },
-  { to: '/provinces', icon: Map, label: 'Provinces', color: 'text-indigo-600', bg: 'bg-indigo-500' },
-  { to: '/cities', icon: Building, label: 'Cities', color: 'text-violet-600', bg: 'bg-violet-500' },
-  { to: '/areas', icon: MapPin, label: 'Areas', color: 'text-purple-600', bg: 'bg-purple-500' },
-  { to: '/my-addresses', icon: MapPin, label: 'My Addresses', color: 'text-emerald-600', bg: 'bg-emerald-500' },
-  { to: '/users', icon: Users, label: 'Users', color: 'text-rose-600', bg: 'bg-rose-500' },
+interface QuickLink {
+  to: string;
+  icon: LucideIcon;
+  label: string;
+  color: string;
+}
+
+const quickLinks: QuickLink[] = [
+  { to: '/countries', icon: Globe, label: 'Countries', color: 'text-blue-600' },
+  { to: '/provinces', icon: Map, label: 'Provinces', color: 'text-indigo-600' },
+  { to: '/cities', icon: Building, label: 'Cities', color: 'text-violet-600' },
+  { to: '/areas', icon: MapPin, label: 'Areas', color: 'text-purple-600' },
+  { to: '/my-addresses', icon: MapPin, label: 'My Addresses', color: 'text-emerald-600' },
+  { to: '/users', icon: Users, label: 'Users', color: 'text-rose-600' },
 ];
 
 const Dashboard = () => (

@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import React, { useState, type ChangeEvent, type FormEvent } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardDescription } from '@/components/ui/card';
 import logoApp from '@/assets/logo-boilerplate.png';
 import { useToast } from '@/components/ui/use-toast';
 
@@ -18,7 +18,7 @@ const Login = () => {
   });
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
 
@@ -28,9 +28,9 @@ const Login = () => {
       navigate('/dashboard');
     } else {
       toast({
-        title: "Error",
-        description: result.error || "Invalid credentials.",
-        variant: "destructive",
+        title: 'Error',
+        description: result.error || 'Invalid credentials.',
+        variant: 'destructive',
       });
     }
 
@@ -43,9 +43,7 @@ const Login = () => {
         <CardHeader className="space-y-4 text-center">
           <img src={logoApp} className="mx-auto h-[7.5rem]" alt="Boilerplates App" />
           <div>
-            <CardDescription className="text-base mt-2">
-              Management System
-            </CardDescription>
+            <CardDescription className="text-base mt-2">Management System</CardDescription>
           </div>
         </CardHeader>
         <CardContent>
@@ -58,7 +56,9 @@ const Login = () => {
                 placeholder="nama@email.com"
                 value={formData.email}
                 disabled={loading}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                  setFormData({ ...formData, email: e.target.value })
+                }
                 required
               />
             </div>
@@ -71,7 +71,9 @@ const Login = () => {
                 placeholder="••••••••"
                 value={formData.password}
                 disabled={loading}
-                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                  setFormData({ ...formData, password: e.target.value })
+                }
                 required
               />
             </div>
@@ -87,9 +89,7 @@ const Login = () => {
 
           <div className="mt-6 text-center text-sm text-slate-600">
             <p>Contact Administrator:</p>
-            <p className="font-mono text-xs mt-1">
-              admin@boilerplates.dev
-            </p>
+            <p className="font-mono text-xs mt-1">admin@boilerplates.dev</p>
           </div>
         </CardContent>
       </Card>
