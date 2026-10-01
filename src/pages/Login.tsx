@@ -89,7 +89,7 @@ const Login = () => {
 
           <div className="mt-6 text-center text-sm text-slate-600">
             <p>Contact Administrator:</p>
-            <p className="font-mono text-xs mt-1">admin@gatra-budget.dev</p>
+            <p className="font-mono text-xs mt-1">admin@gatrahitawasana.com</p>
           </div>
         </CardContent>
       </Card>
