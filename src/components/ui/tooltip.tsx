@@ -1,17 +1,24 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 
-const Tooltip = ({ children, content }) => {
+export interface TooltipProps {
+  /** The trigger element; the tooltip follows it on hover. */
+  children: ReactNode;
+  /** Tooltip copy. */
+  content: ReactNode;
+}
+
+const Tooltip = ({ children, content }: TooltipProps) => {
   const [show, setShow] = useState(false);
   const [position, setPosition] = useState({ top: 0, left: 0 });
-  const triggerRef = useRef(null);
+  const triggerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (show && triggerRef.current) {
       const rect = triggerRef.current.getBoundingClientRect();
       setPosition({
         top: rect.top + rect.height / 2,
-        left: rect.right + 8
+        left: rect.right + 8,
       });
     }
   }, [show]);
@@ -23,7 +30,7 @@ const Tooltip = ({ children, content }) => {
         top: `${position.top}px`,
         left: `${position.left}px`,
         transform: 'translateY(-50%)',
-        zIndex: 99999
+        zIndex: 99999,
       }}
     >
       {content}
@@ -47,11 +54,18 @@ const Tooltip = ({ children, content }) => {
 
 export { Tooltip };
 
-export const SidebarDropdown = ({ trigger, children, title }) => {
+export interface SidebarDropdownProps {
+  /** Element that opens the dropdown on hover. */
+  trigger: ReactNode;
+  children: ReactNode;
+  title: ReactNode;
+}
+
+export const SidebarDropdown = ({ trigger, children, title }: SidebarDropdownProps) => {
   const [show, setShow] = useState(false);
   const [position, setPosition] = useState({ top: 0, left: 0 });
-  const triggerRef = useRef(null);
-  const hideTimeoutRef = useRef(null);
+  const triggerRef = useRef<HTMLDivElement>(null);
+  const hideTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const handleMouseEnter = () => {
     if (hideTimeoutRef.current) {
@@ -71,7 +85,7 @@ export const SidebarDropdown = ({ trigger, children, title }) => {
       const rect = triggerRef.current.getBoundingClientRect();
       setPosition({
         top: rect.top + rect.height / 2,
-        left: rect.right + 8
+        left: rect.right + 8,
       });
     }
   }, [show]);
@@ -90,7 +104,7 @@ export const SidebarDropdown = ({ trigger, children, title }) => {
       style={{
         top: `${position.top}px`,
         left: `${position.left}px`,
-        transform: 'translateY(-50%)'
+        transform: 'translateY(-50%)',
       }}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}

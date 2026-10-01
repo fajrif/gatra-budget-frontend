@@ -1,13 +1,31 @@
-import React from 'react';
-import { Controller } from 'react-hook-form';
+import type { InputHTMLAttributes } from 'react';
+import { Controller, type Control, type FieldPath, type FieldValues } from 'react-hook-form';
 import { Input } from '@/components/ui/input';
 
-const CurrencyInput = ({ control, name, value: propValue, onChange: propOnChange, ...props }) => {
+export interface CurrencyInputProps
+  extends Omit<InputHTMLAttributes<HTMLInputElement>, 'value' | 'onChange' | 'name'> {
+  /** Provide both `control` and `name` to run in React Hook Form mode. */
+  control?: Control<FieldValues>;
+  name?: FieldPath<FieldValues>;
+  /** Standalone mode value. */
+  value?: number | string;
+  /** Standalone mode change handler; receives a number or `''` when cleared. */
+  onChange?: (value: number | '') => void;
+}
 
-  const formatCurrency = (value) => {
+const CurrencyInput = ({
+  control,
+  name,
+  value: propValue,
+  onChange: propOnChange,
+  ...props
+}: CurrencyInputProps) => {
+  const formatCurrency = (value: number | string | undefined) => {
     if (!value && value !== 0) return '';
     // Hapus karakter non-digit sebelum format ulang
-    const numericValue = String(value).replace(/[^\d]/g, '');
+    const raw = String(value).replace(/[^\d]/g, '');
+    if (raw === '') return '';
+    const numericValue = parseInt(raw, 10);
     // Format sebagai IDR tanpa desimal
     return new Intl.NumberFormat('id-ID', {
       style: 'currency',
@@ -17,7 +35,7 @@ const CurrencyInput = ({ control, name, value: propValue, onChange: propOnChange
     }).format(numericValue);
   };
 
-  const parseCurrency = (value) => {
+  const parseCurrency = (value: string) => {
     // Hapus simbol mata uang, titik ribuan, dan koma desimal untuk mendapatkan angka murni
     return value.replace(/[Rp.]/g, '').replace(/,/g, '');
   };
@@ -36,7 +54,7 @@ const CurrencyInput = ({ control, name, value: propValue, onChange: propOnChange
               className="text-left"
               {...props}
               // Tampilkan nilai yang sudah diformat
-              value={formatCurrency(value)}
+              value={formatCurrency(value as number | string | undefined)}
               onChange={(e) => {
                 // Saat input berubah, simpan nilai MURNI (tanpa format Rp.) di state RHF
                 const rawValue = parseCurrency(e.target.value);
@@ -64,4 +82,3 @@ const CurrencyInput = ({ control, name, value: propValue, onChange: propOnChange
 };
 
 export { CurrencyInput };
-

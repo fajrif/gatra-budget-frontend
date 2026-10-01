@@ -1,21 +1,36 @@
-import React, { useState, useRef, useEffect } from 'react'
-import { cn } from '@/lib/utils'
-import { ChevronDown, Search, X } from 'lucide-react'
+import React, { useState, useRef, useEffect, type MouseEvent as ReactMouseEvent } from 'react';
+import { cn } from '@/lib/utils';
+import { ChevronDown, Search, X } from 'lucide-react';
+
+export interface SelectOption {
+  value: string;
+  label: string;
+}
+
+export interface SelectProps {
+  /** Options rendered in the dropdown. */
+  options?: SelectOption[];
+  /** Currently selected value. */
+  value?: string;
+  /** Receives the selected option value, or `''` when cleared. */
+  onChange: (value: string) => void;
+  placeholder?: string;
+  disabled?: boolean;
+  className?: string;
+  /** Renders the trigger in an error state. */
+  error?: boolean;
+  /** Enable search (default: true). */
+  searchable?: boolean;
+  /** Show clear button (default: true). */
+  clearable?: boolean;
+  /** Message when no options (default: "No options available"). */
+  emptyMessage?: string;
+  /** Extra attributes spread onto the wrapper element. */
+  [key: string]: unknown;
+}
 
 /**
  * Select Component - A searchable select component that works with react-hook-form
- *
- * @param {Object} props
- * @param {Array} props.options - Array of options [{value: string, label: string}]
- * @param {string} props.value - Selected value
- * @param {Function} props.onChange - Change handler
- * @param {string} props.placeholder - Placeholder text
- * @param {boolean} props.disabled - Disabled state
- * @param {string} props.className - Additional classes
- * @param {boolean} props.error - Error state
- * @param {boolean} props.searchable - Enable search (default: true)
- * @param {boolean} props.clearable - Show clear button (default: true)
- * @param {string} props.emptyMessage - Message when no options (default: "No options available")
  */
 const Select = ({
   options = [],
@@ -29,85 +44,84 @@ const Select = ({
   clearable = true,
   emptyMessage = 'No options available',
   ...props
-}) => {
-  const [isOpen, setIsOpen] = useState(false)
-  const [searchTerm, setSearchTerm] = useState('')
-  const selectRef = useRef(null)
-  const searchInputRef = useRef(null)
+}: SelectProps) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const selectRef = useRef<HTMLDivElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   // Get selected option label
-  const selectedOption = options.find(opt => opt.value === value)
-  const selectedLabel = selectedOption?.label || ''
+  const selectedOption = options.find((opt) => opt.value === value);
+  const selectedLabel = selectedOption?.label || '';
 
   // Filter options based on search term
-  const filteredOptions = searchable && searchTerm
-    ? options.filter(option =>
-        option.label.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-    : options
+  const filteredOptions =
+    searchable && searchTerm
+      ? options.filter((option) => option.label.toLowerCase().includes(searchTerm.toLowerCase()))
+      : options;
 
   // Handle click outside
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (selectRef.current && !selectRef.current.contains(event.target)) {
-        setIsOpen(false)
-        setSearchTerm('')
+    const handleClickOutside = (event: MouseEvent) => {
+      if (selectRef.current && !selectRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+        setSearchTerm('');
       }
-    }
+    };
 
     if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside)
+      document.addEventListener('mousedown', handleClickOutside);
     }
 
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside)
-    }
-  }, [isOpen])
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isOpen]);
 
   // Auto-focus search input when dropdown opens
   useEffect(() => {
     if (isOpen && searchable && searchInputRef.current) {
       setTimeout(() => {
-        searchInputRef.current?.focus()
-      }, 0)
+        searchInputRef.current?.focus();
+      }, 0);
     }
-  }, [isOpen, searchable])
+  }, [isOpen, searchable]);
 
   // Handle escape key
   useEffect(() => {
-    const handleEscape = (event) => {
+    const handleEscape = (event: KeyboardEvent) => {
       if (event.key === 'Escape' && isOpen) {
-        setIsOpen(false)
-        setSearchTerm('')
+        setIsOpen(false);
+        setSearchTerm('');
       }
-    }
+    };
 
-    document.addEventListener('keydown', handleEscape)
+    document.addEventListener('keydown', handleEscape);
     return () => {
-      document.removeEventListener('keydown', handleEscape)
-    }
-  }, [isOpen])
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [isOpen]);
 
   const handleToggle = () => {
     if (!disabled) {
-      setIsOpen(!isOpen)
+      setIsOpen(!isOpen);
       if (isOpen) {
-        setSearchTerm('')
+        setSearchTerm('');
       }
     }
-  }
+  };
 
-  const handleSelect = (option) => {
-    onChange(option.value)
-    setIsOpen(false)
-    setSearchTerm('')
-  }
+  const handleSelect = (option: SelectOption) => {
+    onChange(option.value);
+    setIsOpen(false);
+    setSearchTerm('');
+  };
 
-  const handleClear = (e) => {
-    e.stopPropagation()
-    onChange('')
-    setSearchTerm('')
-  }
+  const handleClear = (e: ReactMouseEvent) => {
+    e.stopPropagation();
+    onChange('');
+    setSearchTerm('');
+  };
 
   return (
     <div ref={selectRef} className={cn('relative w-full', className)} {...props}>
@@ -123,7 +137,6 @@ const Select = ({
           'disabled:cursor-not-allowed disabled:opacity-50',
           'transition-colors',
           error && 'border-red-500 focus:ring-red-500',
-          className
         )}
       >
         <span className={cn('truncate', !selectedLabel && 'text-muted-foreground')}>
@@ -140,7 +153,7 @@ const Select = ({
           <ChevronDown
             className={cn(
               'h-4 w-4 opacity-50 transition-transform',
-              isOpen && 'transform rotate-180'
+              isOpen && 'transform rotate-180',
             )}
           />
         </div>
@@ -181,13 +194,11 @@ const Select = ({
                     'relative flex w-full cursor-pointer select-none items-center rounded-sm py-2 px-3 text-sm outline-none',
                     'hover:bg-accent hover:text-accent-foreground',
                     'transition-colors',
-                    option.value === value && 'bg-accent/50 font-medium'
+                    option.value === value && 'bg-accent/50 font-medium',
                   )}
                 >
                   {option.label}
-                  {option.value === value && (
-                    <span className="ml-auto text-xs opacity-50">✓</span>
-                  )}
+                  {option.value === value && <span className="ml-auto text-xs opacity-50">✓</span>}
                 </div>
               ))
             ) : (
@@ -199,9 +210,9 @@ const Select = ({
         </div>
       )}
     </div>
-  )
-}
+  );
+};
 
-Select.displayName = 'Select'
+Select.displayName = 'Select';
 
-export default Select
+export default Select;
