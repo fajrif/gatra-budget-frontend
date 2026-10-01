@@ -1,22 +1,36 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, type MouseEvent } from 'react';
 import { createPortal } from 'react-dom';
+import type { ICellRendererParams } from 'ag-grid-community';
 import { MoreVertical, Pencil, Trash2, Eye } from 'lucide-react';
 import { useConfirm } from '@/hooks/useConfirm';
 
-const ActionMenuCellRenderer = ({ data, onEdit, onDelete, onView }) => {
+/**
+ * Kebab menu rendered inside the cell. The action handlers arrive through
+ * `cellRendererParams` (declared in `src/types/ag-grid.d.ts`) rather than
+ * closure scope, which is why AG Grid recreates this component per column.
+ */
+const ActionMenuCellRenderer = <TData extends { id: string }>(
+  params: ICellRendererParams<TData>,
+) => {
+  const { data, cellRendererParams } = params;
+  const { onEdit, onDelete, onView } = cellRendererParams ?? {};
+
   const [isOpen, setIsOpen] = useState(false);
   const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
-  const buttonRef = useRef(null);
-  const menuRef = useRef(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
   const confirm = useConfirm();
 
   useEffect(() => {
-    const handleClickOutside = (event) => {
+    // DOM `MouseEvent`, not React's synthetic `MouseEvent`.
+    const handleClickOutside = (event: globalThis.MouseEvent) => {
+      const target = event.target as Node | null;
       if (
         menuRef.current &&
-        !menuRef.current.contains(event.target) &&
+        target &&
+        !menuRef.current.contains(target) &&
         buttonRef.current &&
-        !buttonRef.current.contains(event.target)
+        !buttonRef.current.contains(target)
       ) {
         setIsOpen(false);
       }
@@ -29,7 +43,7 @@ const ActionMenuCellRenderer = ({ data, onEdit, onDelete, onView }) => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isOpen]);
 
-  const handleToggle = (e) => {
+  const handleToggle = (e: MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
     e.preventDefault();
 
@@ -44,23 +58,23 @@ const ActionMenuCellRenderer = ({ data, onEdit, onDelete, onView }) => {
     setIsOpen(!isOpen);
   };
 
-  const handleView = (e) => {
+  const handleView = (e: MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
     setIsOpen(false);
-    if (onView) onView(data);
+    if (onView && data) onView(data);
   };
 
-  const handleEdit = (e) => {
+  const handleEdit = (e: MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
     setIsOpen(false);
-    onEdit(data);
+    if (onEdit && data) onEdit(data);
   };
 
-  const handleDelete = async (e) => {
+  const handleDelete = async (e: MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
     setIsOpen(false);
     if (await confirm({ message: 'Yakin ingin menghapus data ini?' })) {
-      onDelete(data.id);
+      if (onDelete && data) onDelete(data.id);
     }
   };
 
@@ -109,7 +123,7 @@ const ActionMenuCellRenderer = ({ data, onEdit, onDelete, onView }) => {
               Hapus
             </button>
           </div>,
-          document.body
+          document.body,
         )}
     </div>
   );
