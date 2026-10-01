@@ -1,5 +1,5 @@
 import React from 'react';
-import logoApp from '@/assets/logo-boilerplate.png';
+import logoApp from '@/assets/logo-gatra-budget.png';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import {
@@ -146,7 +146,7 @@ export default function Layout({ children }: LayoutProps) {
               className={`flex items-center ${sidebarCollapsed ? 'lg:justify-center' : 'justify-between'}`}
             >
               {!sidebarCollapsed && (
-                <img src={logoApp} className="w-[70%] mx-auto" alt="Boilerplates App" />
+                <img src={logoApp} className="w-[70%] mx-auto" alt="Gatra Budget App" />
               )}
               <button
                 onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
@@ -510,7 +510,7 @@ export default function Layout({ children }: LayoutProps) {
             >
               <Menu className="w-5 h-5" />
             </button>
-            <h1 className="text-lg font-semibold text-slate-900">Boilerplates</h1>
+            <h1 className="text-lg font-semibold text-slate-900">Gatra Budget</h1>
           </div>
         </header>
 

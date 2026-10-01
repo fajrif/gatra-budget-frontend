@@ -158,7 +158,7 @@ const AddEditUserDialog = ({ isOpen, onClose, editingUser, onFinish }: AddEditUs
               <Label htmlFor="email">Email *</Label>
               <Input
                 id="email"
-                placeholder="Contoh: user@boilerplates.dev"
+                placeholder="Contoh: user@gatra-budget.dev"
                 {...register('email')}
               />
               {errors.email && (

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 
-const STORAGE_KEY = 'boilerplates_sidebar_menu_state';
+const STORAGE_KEY = 'gatra_budget_sidebar_menu_state';
 
 export type SidebarMenuState = Record<string, boolean>;
 

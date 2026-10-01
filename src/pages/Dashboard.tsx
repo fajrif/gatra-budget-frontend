@@ -24,7 +24,7 @@ const Dashboard = () => (
     <div className="max-w-7xl mx-auto space-y-6">
       <div>
         <h1 className="text-2xl font-semibold text-slate-900">Dashboard</h1>
-        <p className="text-slate-500 mt-1">Welcome to Boilerplates — your Go + React starter kit</p>
+        <p className="text-slate-500 mt-1">Welcome to Gatra Budget — your Go + React starter kit</p>
       </div>
 
       <Card className="border-none shadow-lg">
@@ -45,7 +45,7 @@ const Dashboard = () => (
 
       <Card className="border-none shadow-lg">
         <CardHeader>
-          <CardTitle className="text-base">About This Boilerplate</CardTitle>
+          <CardTitle className="text-base">About This Gatra Budget</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3 text-sm text-slate-600">
           <p>

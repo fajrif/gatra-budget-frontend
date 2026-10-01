@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardDescription } from '@/components/ui/card';
-import logoApp from '@/assets/logo-boilerplate.png';
+import logoApp from '@/assets/logo-gatra-budget.png';
 import { useToast } from '@/components/ui/use-toast';
 
 const Login = () => {
@@ -41,7 +41,7 @@ const Login = () => {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
       <Card className="w-full max-w-md shadow-2xl">
         <CardHeader className="space-y-4 text-center">
-          <img src={logoApp} className="mx-auto h-[7.5rem]" alt="Boilerplates App" />
+          <img src={logoApp} className="mx-auto h-[7.5rem]" alt="Gatra Budget App" />
           <div>
             <CardDescription className="text-base mt-2">Management System</CardDescription>
           </div>
@@ -89,7 +89,7 @@ const Login = () => {
 
           <div className="mt-6 text-center text-sm text-slate-600">
             <p>Contact Administrator:</p>
-            <p className="font-mono text-xs mt-1">admin@boilerplates.dev</p>
+            <p className="font-mono text-xs mt-1">admin@gatra-budget.dev</p>
           </div>
         </CardContent>
       </Card>

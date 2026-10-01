@@ -1,4 +1,4 @@
-# Boilerplates Frontend
+# Gatra Budget Frontend
 
 React SPA starter kit built with Vite + TailwindCSS + React Query.
 
