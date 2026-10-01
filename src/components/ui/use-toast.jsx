@@ -16,14 +16,19 @@ export const useToast = () => {
           },
         });
       } else if (variant === 'destructive') {
+        // Long errors (e.g. a list of rejected references) need time to be read;
+        // short ones keep the usual 4s.
+        const duration = Math.max(4000, Math.min(15000, String(message ?? '').length * 60));
         toast.error(message, {
-          duration: 4000,
+          duration,
           style: {
             background: '#ef4444',
             color: '#fff',
             padding: '16px',
             borderRadius: '8px',
           },
+          whiteSpace: 'pre-line',
+          maxWidth: '480px',
         });
       } else {
         toast(message, {

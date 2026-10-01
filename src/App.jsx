@@ -2,30 +2,30 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'react-hot-toast';
-import { AuthProvider } from './context/AuthContext';
-import { ConfirmProvider } from './context/ConfirmContext';
+import { AuthProvider } from '@/context/AuthContext';
+import { ConfirmProvider } from '@/context/ConfirmContext';
 
 // Pages
-import Login from './pages/Login';
-import UserProfile from './pages/UserProfile';
-import Dashboard from './pages/Dashboard';
+import Login from '@/pages/Login';
+import UserProfile from '@/pages/UserProfile';
+import Dashboard from '@/pages/Dashboard';
 
 // Address reference pages (admin only)
-import Countries from './pages/masters/Countries';
-import Provinces from './pages/masters/Provinces';
-import Cities from './pages/masters/Cities';
-import Areas from './pages/masters/Areas';
+import Countries from '@/pages/masters/Countries';
+import Provinces from '@/pages/masters/Provinces';
+import Cities from '@/pages/masters/Cities';
+import Areas from '@/pages/masters/Areas';
 
 // Operational pages
-import Users from './pages/operationals/Users';
-import UserAddresses from './pages/operationals/UserAddresses';
+import Users from '@/pages/operationals/Users';
+import UserAddresses from '@/pages/operationals/UserAddresses';
 
 // Reports
-import ReportSample from './pages/reports/ReportSample';
+import ReportSample from '@/pages/reports/ReportSample';
 
 // Layout
-import Layout from './components/Layout';
-import ProtectedRoute from './components/ProtectedRoute';
+import Layout from '@/components/Layout';
+import ProtectedRoute from '@/components/ProtectedRoute';
 
 const queryClient = new QueryClient({
   defaultOptions: {

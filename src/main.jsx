@@ -1,8 +1,9 @@
-import React from 'react'
-import ReactDOM from 'react-dom/client'
-import { ModuleRegistry, AllCommunityModule } from 'ag-grid-community'
-import App from './App.jsx'
-import './index.css'
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import { ModuleRegistry, AllCommunityModule } from 'ag-grid-community';
+import App from '@/App';
+import './styles/ag-grid-overrides.css';   // ← new
+import './index.css';
 
 ModuleRegistry.registerModules([AllCommunityModule])
 

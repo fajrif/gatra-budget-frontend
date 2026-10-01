@@ -1,6 +1,6 @@
 import React from 'react';
 import { Controller } from 'react-hook-form';
-import { Input } from './input';
+import { Input } from '@/components/ui/input';
 
 const PercentageInput = ({ control, name, value: propValue, onChange: propOnChange, ...props }) => {
   const formatPercentage = (value) => {

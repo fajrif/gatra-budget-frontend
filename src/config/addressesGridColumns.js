@@ -1,13 +1,6 @@
-import { ActionMenuCellRenderer } from '@/components/ag-grid/cellRenderers';
-import { TooltipCellRenderer } from '@/components/ag-grid/cellRenderers';
+import { ActionMenuCellRenderer, TooltipCellRenderer } from '@/components/ag-grid/cellRenderers';
 
-export const defaultColDef = {
-  sortable: true,
-  resizable: true,
-  filter: 'agTextColumnFilter',
-  floatingFilter: true,
-  suppressHeaderMenuButton: true,
-};
+export { defaultColDef } from '@/config/defaultColDef';
 
 export const createAddressesColumnDefs = ({ onEdit, onDelete }) => [
   {
@@ -18,8 +11,6 @@ export const createAddressesColumnDefs = ({ onEdit, onDelete }) => [
   {
     field: 'address',
     headerName: 'Address',
-    flex: 1,
-    minWidth: 200,
     cellRenderer: TooltipCellRenderer,
   },
   {
@@ -39,7 +30,9 @@ export const createAddressesColumnDefs = ({ onEdit, onDelete }) => [
   },
   {
     headerName: 'Actions',
-    width: 80,
+    field: 'actions',
+    width: 60,
+    resizable: false,
     sortable: false,
     filter: false,
     floatingFilter: false,

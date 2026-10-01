@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { userSchemaForEdit, userSchemaWithPasswordConfirmation } from "@/utils/validations/User";
 import { useToast } from '@/components/ui/use-toast';
 import { USER_ROLES } from '@/utils/constants';
+import { Save, Loader2 } from 'lucide-react';
 
 const AddEditUserDialog = ({ isOpen, onClose, editingUser, onFinish }) => {
   const { toast } = useToast();
@@ -184,7 +185,14 @@ const AddEditUserDialog = ({ isOpen, onClose, editingUser, onFinish }) => {
               disabled={createMutation.isPending || updateMutation.isPending}
               className="bg-green-600 hover:bg-green-700"
             >
-              {(createMutation.isPending || updateMutation.isPending) ? 'Menyimpan...' : 'Simpan'}
+              {(createMutation.isPending || updateMutation.isPending) ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <>
+                  <Save className="w-4 h-4 mr-2" />
+                  Simpan
+                </>
+              )}
             </Button>
           </DialogFooter>
         </form>

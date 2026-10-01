@@ -1,12 +1,6 @@
 import { ActionMenuCellRenderer } from '@/components/ag-grid/cellRenderers';
 
-export const defaultColDef = {
-  sortable: true,
-  resizable: true,
-  filter: 'agTextColumnFilter',
-  floatingFilter: true,
-  suppressHeaderMenuButton: true,
-};
+export { defaultColDef } from '@/config/defaultColDef';
 
 export const createCountriesColumnDefs = ({ onEdit, onDelete }) => [
   {
@@ -18,12 +12,12 @@ export const createCountriesColumnDefs = ({ onEdit, onDelete }) => [
   {
     field: 'name',
     headerName: 'Country Name',
-    flex: 1,
-    minWidth: 180,
   },
   {
     headerName: 'Actions',
-    width: 80,
+    field: 'actions',
+    width: 60,
+    resizable: false,
     sortable: false,
     filter: false,
     floatingFilter: false,

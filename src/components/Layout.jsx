@@ -1,7 +1,7 @@
 import React from 'react';
 import logoApp from '@/assets/logo-boilerplate.png';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
+import { useAuth } from '@/hooks/useAuth';
 import {
   LayoutDashboard,
   Settings,
@@ -20,9 +20,9 @@ import {
   TrendingUp,
   Home,
 } from 'lucide-react';
-import { Button } from './ui/button';
-import { Collapsible, CollapsibleTrigger, CollapsibleContent } from './ui/collapsible';
-import { Tooltip, SidebarDropdown } from './ui/tooltip';
+import { Button } from '@/components/ui/button';
+import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible';
+import { Tooltip, SidebarDropdown } from '@/components/ui/tooltip';
 import { getAssetUrl } from '@/helpers/AssetHelper';
 import { useSidebarMenuState } from '@/hooks/useSidebarMenuState';
 

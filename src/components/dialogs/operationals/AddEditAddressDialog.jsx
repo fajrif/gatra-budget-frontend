@@ -11,6 +11,7 @@ import Select from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { addressSchema } from '@/utils/validations/Address';
 import { useToast } from '@/components/ui/use-toast';
+import { Save, Loader2 } from 'lucide-react';
 
 const AddEditAddressDialog = ({ isOpen, onClose, editingItem, onFinish }) => {
   const { toast } = useToast();
@@ -199,8 +200,15 @@ const AddEditAddressDialog = ({ isOpen, onClose, editingItem, onFinish }) => {
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
-            <Button type="submit" disabled={saveMutation.isPending} className="bg-blue-900 hover:bg-blue-800">
-              {saveMutation.isPending ? 'Saving...' : 'Save'}
+            <Button type="submit" disabled={saveMutation.isPending} className="bg-green-600 hover:bg-green-700">
+              {saveMutation.isPending ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <>
+                  <Save className="w-4 h-4 mr-2" />
+                  Save
+                </>
+              )}
             </Button>
           </DialogFooter>
         </form>

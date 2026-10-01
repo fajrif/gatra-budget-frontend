@@ -3,9 +3,9 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { addressesAPI } from '@/api/endpoints';
 import { AgGridReact } from 'ag-grid-react';
 import { appTheme } from '@/lib/agGridTheme';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
+import { Plus, MapPin } from 'lucide-react';
 import { useConfirm } from '@/hooks/useConfirm';
 import { useToast } from '@/components/ui/use-toast';
 import AddEditAddressDialog from '@/components/dialogs/operationals/AddEditAddressDialog';
@@ -60,28 +60,66 @@ const UserAddresses = () => {
             <h1 className="text-2xl font-semibold text-slate-900">My Addresses</h1>
             <p className="text-slate-500 mt-1">Manage your saved addresses</p>
           </div>
-          <Button onClick={() => setShowDialog(true)} className="bg-blue-900 hover:bg-blue-800">
-            <Plus className="w-4 h-4 mr-2" />
-            Add Address
-          </Button>
         </div>
 
+        <Card className="border-none shadow-lg bg-gradient-to-br from-blue-50 to-indigo-50">
+          <CardContent className="pt-6">
+            <div className="flex items-start gap-4">
+              <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
+                <MapPin className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-slate-900 mb-2">About My Addresses</h3>
+                <p className="text-sm text-slate-700 mb-3">Addresses saved to your user profile.</p>
+                <div className="space-y-1 text-sm text-slate-600">
+                  <p>• <strong className="font-semibold">Label:</strong> Short name (e.g. Home, Office)</p>
+                  <p>• <strong className="font-semibold">Address:</strong> Full street address</p>
+                  <p>• <strong className="font-semibold">Country ID:</strong> reference to <code>countries</code></p>
+                  <p>• <strong className="font-semibold">Province ID:</strong> reference to <code>provinces</code></p>
+                  <p>• <strong className="font-semibold">City ID:</strong> reference to <code>cities</code></p>
+                  <p>• <strong className="font-semibold">Area ID:</strong> reference to <code>areas</code> (optional)</p>
+                  <p>• <strong className="font-semibold">Zipcode:</strong> Postal code</p>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
         <Card className="border-none shadow-lg">
-          <CardContent className="p-0">
+          <CardHeader className="border-b border-slate-100">
+            <div className="flex justify-end items-center">
+              <Button onClick={() => setShowDialog(true)} className="bg-blue-900 hover:bg-blue-800">
+                <Plus className="w-4 h-4 mr-2" />
+                Add Address
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent className="pt-6">
             {isLoading ? (
-              <div className="p-8 text-center text-slate-500 animate-pulse">Loading...</div>
+              <div className="text-center py-8">Loading...</div>
+            ) : data.length === 0 ? (
+              <div className="text-center py-8 text-slate-500">
+                No addresses yet. Add your first address.
+              </div>
             ) : (
-              <div style={{ height: 500, width: '100%' }}>
+              <div className="ag-grid-wrapper" style={{ height: 600, width: '100%' }}>
                 <AgGridReact
                   theme={appTheme}
                   ref={gridRef}
                   rowData={data ?? []}
                   columnDefs={columnDefs}
                   defaultColDef={defaultColDef}
+                  getRowId={(params) => params.data.id}
+                  pagination
+                  paginationPageSize={20}
+                  paginationPageSizeSelector={[20, 50, 100]}
+                  animateRows
                   suppressCellFocus
-                  rowHeight={44}
+                  tooltipShowDelay={200}
+                  tooltipHideDelay={2000}
+                  overlayNoRowsTemplate="<span>No data.</span>"
                 />
               </div>
+
             )}
           </CardContent>
         </Card>
