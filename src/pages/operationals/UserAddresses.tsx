@@ -8,16 +8,20 @@ import { Button } from '@/components/ui/button';
 import { Plus, MapPin } from 'lucide-react';
 import { useConfirm } from '@/hooks/useConfirm';
 import { useToast } from '@/components/ui/use-toast';
-import AddEditAddressDialog from '@/components/dialogs/operationals/AddEditAddressDialog';
+import AddEditAddressDialog, {
+  type AddressEditingItem,
+} from '@/components/dialogs/operationals/AddEditAddressDialog';
 import { createAddressesColumnDefs, defaultColDef } from '@/config/addressesGridColumns';
+import { getErrorMessage } from '@/utils/getErrorMessage';
+import type { Address } from '@/types';
 
 const UserAddresses = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const confirm = useConfirm();
-  const gridRef = useRef(null);
+  const gridRef = useRef<AgGridReact | null>(null);
   const [showDialog, setShowDialog] = useState(false);
-  const [editingItem, setEditingItem] = useState(null);
+  const [editingItem, setEditingItem] = useState<AddressEditingItem | null>(null);
 
   const { data, isLoading } = useQuery({
     queryKey: ['my-addresses'],
@@ -26,28 +30,42 @@ const UserAddresses = () => {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id) => addressesAPI.deleteMine(id),
+    mutationFn: (id: string) => addressesAPI.deleteMine(id),
     onSuccess: () => {
-      queryClient.invalidateQueries(['my-addresses']);
+      queryClient.invalidateQueries({ queryKey: ['my-addresses'] });
       toast({ title: 'Success', description: 'Address deleted.', variant: 'success' });
     },
     onError: (err) => {
-      toast({ title: 'Error', description: err.response?.data?.error || 'Failed to delete address.', variant: 'destructive' });
+      toast({
+        title: 'Error',
+        description: getErrorMessage(err, 'Failed to delete address.'),
+        variant: 'destructive',
+      });
     },
   });
 
-  const handleDelete = useCallback(async (row) => {
-    const ok = await confirm({ message: `Delete address "${row.name}"?`, variant: 'danger' });
-    if (ok) deleteMutation.mutate(row.id);
-  }, [confirm, deleteMutation]);
+  const handleDelete = useCallback(
+    async (row: Address) => {
+      const ok = await confirm({ message: `Delete address "${row.name}"?`, variant: 'danger' });
+      if (ok) deleteMutation.mutate(row.id);
+    },
+    [confirm, deleteMutation],
+  );
 
-  const columnDefs = useMemo(() => createAddressesColumnDefs({
-    onEdit: (row) => { setEditingItem(row); setShowDialog(true); },
-    onDelete: handleDelete,
-  }), [handleDelete]);
+  const columnDefs = useMemo(
+    () =>
+      createAddressesColumnDefs({
+        onEdit: (row: Address) => {
+          setEditingItem(row);
+          setShowDialog(true);
+        },
+        onDelete: handleDelete,
+      }),
+    [handleDelete],
+  );
 
-  const finishSubmit = (shouldRefresh) => {
-    if (shouldRefresh) queryClient.invalidateQueries(['my-addresses']);
+  const finishSubmit = (shouldRefresh: boolean) => {
+    if (shouldRefresh) queryClient.invalidateQueries({ queryKey: ['my-addresses'] });
     setShowDialog(false);
     setEditingItem(null);
   };
@@ -70,15 +88,36 @@ const UserAddresses = () => {
               </div>
               <div>
                 <h3 className="font-semibold text-slate-900 mb-2">About My Addresses</h3>
-                <p className="text-sm text-slate-700 mb-3">Addresses saved to your user profile.</p>
+                <p className="text-sm text-slate-700 mb-3">
+                  Addresses saved to your user profile.
+                </p>
                 <div className="space-y-1 text-sm text-slate-600">
-                  <p>• <strong className="font-semibold">Label:</strong> Short name (e.g. Home, Office)</p>
-                  <p>• <strong className="font-semibold">Address:</strong> Full street address</p>
-                  <p>• <strong className="font-semibold">Country ID:</strong> reference to <code>countries</code></p>
-                  <p>• <strong className="font-semibold">Province ID:</strong> reference to <code>provinces</code></p>
-                  <p>• <strong className="font-semibold">City ID:</strong> reference to <code>cities</code></p>
-                  <p>• <strong className="font-semibold">Area ID:</strong> reference to <code>areas</code> (optional)</p>
-                  <p>• <strong className="font-semibold">Zipcode:</strong> Postal code</p>
+                  <p>
+                    • <strong className="font-semibold">Label:</strong> Short name (e.g. Home,
+                    Office)
+                  </p>
+                  <p>
+                    • <strong className="font-semibold">Address:</strong> Full street address
+                  </p>
+                  <p>
+                    • <strong className="font-semibold">Country ID:</strong> reference to{' '}
+                    <code>countries</code>
+                  </p>
+                  <p>
+                    • <strong className="font-semibold">Province ID:</strong> reference to{' '}
+                    <code>provinces</code>
+                  </p>
+                  <p>
+                    • <strong className="font-semibold">City ID:</strong> reference to{' '}
+                    <code>cities</code>
+                  </p>
+                  <p>
+                    • <strong className="font-semibold">Area ID:</strong> reference to{' '}
+                    <code>areas</code> (optional)
+                  </p>
+                  <p>
+                    • <strong className="font-semibold">Zipcode:</strong> Postal code
+                  </p>
                 </div>
               </div>
             </div>
@@ -87,7 +126,10 @@ const UserAddresses = () => {
         <Card className="border-none shadow-lg">
           <CardHeader className="border-b border-slate-100">
             <div className="flex justify-end items-center">
-              <Button onClick={() => setShowDialog(true)} className="bg-blue-900 hover:bg-blue-800">
+              <Button
+                onClick={() => setShowDialog(true)}
+                className="bg-blue-900 hover:bg-blue-800"
+              >
                 <Plus className="w-4 h-4 mr-2" />
                 Add Address
               </Button>
@@ -96,7 +138,7 @@ const UserAddresses = () => {
           <CardContent className="pt-6">
             {isLoading ? (
               <div className="text-center py-8">Loading...</div>
-            ) : data.length === 0 ? (
+            ) : (data?.length ?? 0) === 0 ? (
               <div className="text-center py-8 text-slate-500">
                 No addresses yet. Add your first address.
               </div>
@@ -119,7 +161,6 @@ const UserAddresses = () => {
                   overlayNoRowsTemplate="<span>No data.</span>"
                 />
               </div>
-
             )}
           </CardContent>
         </Card>
@@ -128,7 +169,7 @@ const UserAddresses = () => {
       <AddEditAddressDialog
         isOpen={showDialog}
         onClose={() => finishSubmit(false)}
-        editingItem={editingItem}
+        editingItem={editingItem ?? undefined}
         onFinish={finishSubmit}
       />
     </div>

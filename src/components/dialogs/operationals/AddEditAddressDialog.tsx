@@ -29,11 +29,22 @@ import type { z } from 'zod';
 
 export type AddressFormValues = z.infer<typeof addressSchema>;
 
+/**
+ * The grid row shape handed to the dialog. `area_id` is nullable on the Go
+ * model (`*uuid.UUID` with `omitempty`), so widen it here — the dialog
+ * normalises `null` to `''` before submitting.
+ */
+export type AddressEditingItem = Omit<AddressFormValues, 'area_id' | 'zipcode'> & {
+  id?: string;
+  area_id?: string | null;
+  zipcode?: string | null;
+};
+
 export interface AddEditAddressDialogProps {
   isOpen: boolean;
   onClose: () => void;
   /** Address to edit; undefined when creating. */
-  editingItem?: AddressFormValues & { id?: string };
+  editingItem?: AddressEditingItem;
   /** Called with `shouldRefresh` after successful save. */
   onFinish: (shouldRefresh: boolean) => void;
 }
