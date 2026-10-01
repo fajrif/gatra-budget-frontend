@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, type ChangeEvent } from 'react';
 import { useConfirm } from '@/hooks/useConfirm';
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
-import { api } from '@/api/axios';
+import { usersAPI } from '@/api/endpoints';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -13,26 +13,36 @@ import { getRoleColor } from '@/utils/helpers/UserHelper';
 import { formatDate } from '@/utils/formatters';
 import { PAGINATION } from '@/utils/constants';
 import { useToast } from '@/components/ui/use-toast';
+import { getErrorMessage } from '@/utils/getErrorMessage';
+import type { ListEnvelope, User as UserType } from '@/types';
+
+type UsersEnvelope = ListEnvelope<'users', UserType>;
+
+const emptyUsers: UsersEnvelope = {
+  users: [],
+  pagination: { total: 0, page: 1, limit: PAGINATION.DEFAULT_LIMIT, total_pages: 0 },
+};
 
 const MasterUser = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const [showDialog, setShowDialog] = useState(false);
-  const [editingUser, setEditingUser] = useState(null);
+  const [editingUser, setEditingUser] = useState<UserType | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [currentPage, setCurrentPage] = useState(PAGINATION.DEFAULT_PAGE);
+  const [currentPage, setCurrentPage] = useState<number>(PAGINATION.DEFAULT_PAGE);
   const limit = PAGINATION.DEFAULT_LIMIT;
   const confirm = useConfirm();
 
-  const { data: usersData = { users: [], pagination: { total: 0, page: 1, limit: PAGINATION.DEFAULT_LIMIT, total_pages: 0 } }, isLoading } = useQuery({
+  const {
+    data: usersData = emptyUsers,
+    isLoading,
+  } = useQuery({
     queryKey: ['users', searchTerm, currentPage, limit],
     queryFn: async () => {
-      const response = await api.get('/users', {
-        params: {
-          search: searchTerm,
-          page: currentPage,
-          limit: limit,
-        },
+      const response = await usersAPI.getAll({
+        search: searchTerm,
+        page: currentPage,
+        limit: limit,
       });
       return response.data;
     },
@@ -40,48 +50,48 @@ const MasterUser = () => {
     placeholderData: keepPreviousData,
   });
 
-  const handleEdit = (user) => {
+  const handleEdit = (user: UserType) => {
     setEditingUser(user);
     setShowDialog(true);
   };
 
-  const finishSubmit = (isQuery=true) => {
-    if(isQuery) {
-      queryClient.invalidateQueries(['users']);
+  const finishSubmit = (isQuery = true) => {
+    if (isQuery) {
+      queryClient.invalidateQueries({ queryKey: ['users'] });
     }
     setShowDialog(false);
     setEditingUser(null);
   };
 
-  const handlePageChange = (newPage) => {
+  const handlePageChange = (newPage: number) => {
     setCurrentPage(newPage);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleSearchChange = (e) => {
+  const handleSearchChange = (e: ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
     setCurrentPage(PAGINATION.DEFAULT_PAGE);
   };
 
   const deleteMutation = useMutation({
-    mutationFn: async (id) => {
-      await api.delete(`/users/${id}`);
+    mutationFn: async (id: string) => {
+      await usersAPI.delete(id);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['users']);
+      queryClient.invalidateQueries({ queryKey: ['users'] });
       toast({
-        title: "Success",
-        description: "User berhasil dihapus.",
-        variant: "success",
+        title: 'Success',
+        description: 'User berhasil dihapus.',
+        variant: 'success',
       });
     },
     onError: (error) => {
       toast({
-        title: "Error",
-        description: error.response?.data?.error || "Gagal menghapus user.",
-        variant: "destructive",
+        title: 'Error',
+        description: getErrorMessage(error, 'Gagal menghapus user.'),
+        variant: 'destructive',
       });
-    }
+    },
   });
 
   return (
@@ -101,15 +111,29 @@ const MasterUser = () => {
                 <User className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h3 className="font-semibold text-slate-900 mb-2">Tentang Master Data User</h3>
+                <h3 className="font-semibold text-slate-900 mb-2">
+                  Tentang Master Data User
+                </h3>
                 <p className="text-sm text-slate-700 mb-3">
                   Master data user atau pengguna digunakan untuk akses system ini.
                 </p>
                 <div className="space-y-1 text-sm text-slate-600">
-                  <p>• <strong className="font-semibold">Email:</strong> Email pengguna yang di daftarkan</p>
-                  <p>• <strong className="font-semibold">Password:</strong> Password min. 8 karakter, mengandung huruf besar dan kecil, mengandung min. 1 symbol</p>
-                  <p>• <strong className="font-semibold">Nama Lengkap:</strong> Nama lengkap pengguna (min. 3 karakter)</p>
-                  <p>• <strong className="font-semibold">Role:</strong> Role dari pengguna (admin / user / operator)</p>
+                  <p>
+                    • <strong className="font-semibold">Email:</strong> Email pengguna yang di
+                    daftarkan
+                  </p>
+                  <p>
+                    • <strong className="font-semibold">Password:</strong> Password min. 8 karakter,
+                    mengandung huruf besar dan kecil, mengandung min. 1 symbol
+                  </p>
+                  <p>
+                    • <strong className="font-semibold">Nama Lengkap:</strong> Nama lengkap pengguna
+                    (min. 3 karakter)
+                  </p>
+                  <p>
+                    • <strong className="font-semibold">Role:</strong> Role dari pengguna (admin /
+                    user / operator)
+                  </p>
                 </div>
               </div>
             </div>
@@ -157,19 +181,30 @@ const MasterUser = () => {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {usersData.users.map((user) => (
-              <Card key={user.id} className="border-none shadow-md hover:shadow-lg transition-all duration-200 hover:-translate-y-0.5">
+              <Card
+                key={user.id}
+                className="border-none shadow-md hover:shadow-lg transition-all duration-200 hover:-translate-y-0.5"
+              >
                 <CardContent className="p-6">
                   <div className="flex justify-between items-start mb-4">
-                    <Badge variant="outline" className={getRoleColor(user.role)}>{user.role}</Badge>
+                    <Badge variant="outline" className={getRoleColor(user.role)}>
+                      {user.role}
+                    </Badge>
                     <div className="flex gap-1">
-                      <Button variant="ghost" size="icon" onClick={() => handleEdit(user)}>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleEdit(user)}
+                      >
                         <Pencil className="w-4 h-4" />
                       </Button>
                       <Button
                         variant="ghost"
                         size="icon"
                         onClick={async () => {
-                          const ok = await confirm({ message: 'Yakin ingin menghapus user ini?' });
+                          const ok = await confirm({
+                            message: 'Yakin ingin menghapus user ini?',
+                          });
                           if (ok) deleteMutation.mutate(user.id);
                         }}
                         className="text-red-500 hover:text-red-700"
@@ -178,11 +213,10 @@ const MasterUser = () => {
                       </Button>
                     </div>
                   </div>
-                  <h3 className="text-lg font-semibold text-slate-900 mb-3">
-                    {user.full_name}
-                  </h3>
+                  <h3 className="text-lg font-semibold text-slate-900 mb-3">{user.full_name}</h3>
                   <p className="text-sm text-slate-600 leading-relaxed">
-                    Email: {user.email}<br/>
+                    Email: {user.email}
+                    <br />
                     Dibuat pada: {formatDate(user.created_at)}
                   </p>
                 </CardContent>

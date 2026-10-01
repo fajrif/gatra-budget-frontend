@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import { api } from '@/api/axios';
+import { usersAPI } from '@/api/endpoints';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
@@ -20,12 +20,25 @@ import { getErrorMessage } from '@/utils/getErrorMessage';
 import { USER_ROLES } from '@/utils/constants';
 import { Save, Loader2 } from 'lucide-react';
 import type { z } from 'zod';
-import type { User } from '@/types';
+import type { User, UserRequest } from '@/types';
 
 export type UserFormCreate = z.infer<typeof userSchemaWithPasswordConfirmation>;
 export type UserFormEdit = z.infer<typeof userSchemaForEdit>;
 
 export type AddEditUserFormValues = UserFormCreate | UserFormEdit;
+
+/**
+ * Strips the form-only keys (`password_confirmation`) and collapses the zod
+ * schema's nullable `role` to `undefined` so the payload matches
+ * `models.UserRequest`, where every field is a plain `string` with `omitempty`.
+ */
+const toUserRequest = (data: AddEditUserFormValues): UserRequest => {
+  const { password_confirmation: _confirmation, role, ...rest } = data;
+  return {
+    ...rest,
+    ...(role ? { role } : {}),
+  };
+};
 
 export interface AddEditUserDialogProps {
   isOpen: boolean;
@@ -68,7 +81,7 @@ const AddEditUserDialog = ({ isOpen, onClose, editingUser, onFinish }: AddEditUs
 
   const createMutation = useMutation({
     mutationFn: async (data: UserFormCreate) => {
-      const response = await api.post('/users', data);
+      const response = await usersAPI.create(toUserRequest(data));
       return response.data;
     },
     onSuccess: async () => {
@@ -89,8 +102,8 @@ const AddEditUserDialog = ({ isOpen, onClose, editingUser, onFinish }: AddEditUs
   });
 
   const updateMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: Partial<UserFormEdit> }) => {
-      const response = await api.put(`/users/${id}`, data);
+    mutationFn: async ({ id, data }: { id: string; data: UserFormEdit }) => {
+      const response = await usersAPI.update(id, toUserRequest(data));
       return response.data;
     },
     onSuccess: async () => {
@@ -122,7 +135,7 @@ const AddEditUserDialog = ({ isOpen, onClose, editingUser, onFinish }: AddEditUs
 
   const onHandleSubmit = async (data: AddEditUserFormValues) => {
     if (editingUser) {
-      const payload: UserFormEdit = { ...data };
+      const payload = { ...data } as UserFormEdit;
       if (!payload.password) {
         delete payload.password;
         delete payload.password_confirmation;
