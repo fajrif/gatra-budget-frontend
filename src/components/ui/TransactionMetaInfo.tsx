@@ -2,7 +2,27 @@ import React from 'react';
 import { Label } from '@/components/ui/label';
 import { getPeriodeLabel } from '@/utils/helpers/TransactionHelper';
 
-const TransactionMetaInfo = ({ transaction }) => {
+/**
+ * Legacy, currently unrendered component. The backend has no sales-transaction
+ * endpoints, so these shapes are declared locally instead of in `src/types`.
+ */
+interface BookReference {
+  code: string;
+  name: string;
+}
+
+export interface TransactionMeta {
+  periode?: number | string | null;
+  year?: number | string | null;
+  merk_buku?: BookReference | null;
+  jenis_buku?: BookReference | null;
+}
+
+interface TransactionMetaInfoProps {
+  transaction?: TransactionMeta | null;
+}
+
+const TransactionMetaInfo = ({ transaction }: TransactionMetaInfoProps) => {
   if (!transaction) return null;
 
   return (
@@ -22,9 +42,7 @@ const TransactionMetaInfo = ({ transaction }) => {
       <div className="space-y-1">
         <Label className="text-slate-500 text-xs">Merk Buku</Label>
         <p className="text-sm font-medium text-slate-700">
-          {transaction.merk_buku
-            ? `[${transaction.merk_buku.code}] ${transaction.merk_buku.name}`
-            : '-'}
+          {transaction.merk_buku ? `[${transaction.merk_buku.code}] ${transaction.merk_buku.name}` : '-'}
         </p>
       </div>
       <div className="space-y-1">

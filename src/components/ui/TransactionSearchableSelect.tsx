@@ -1,20 +1,54 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, type ChangeEvent, type MouseEvent } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/api/axios';
 import { formatDate } from '@/utils/formatters';
+import type { ListParams, UUID } from '@/types';
 
-const TransactionSearchableSelect = ({ value, onChange, statusFilter = null, placeholder = 'Pilih Transaksi...' }) => {
+/**
+ * Legacy, currently unrendered component: it targets `/sales-transactions`,
+ * which the Go backend does not implement. Its payload shapes are declared
+ * locally rather than in `src/types` for that reason.
+ */
+interface SalesTransaction {
+  id: UUID;
+  no_invoice: string;
+  transaction_date: string;
+  sales_associate?: { name: string } | null;
+}
+
+interface SalesTransactionEnvelope {
+  sales_transactions?: SalesTransaction[];
+}
+
+/** `status` is specific to the (unimplemented) transaction list endpoint. */
+interface SalesTransactionParams extends ListParams {
+  status?: string;
+}
+
+interface TransactionSearchableSelectProps {
+  value?: UUID | null;
+  onChange: (id: UUID | null) => void;
+  statusFilter?: string | null;
+  placeholder?: string;
+}
+
+const TransactionSearchableSelect = ({
+  value,
+  onChange,
+  statusFilter = null,
+  placeholder = 'Pilih Transaksi...',
+}: TransactionSearchableSelectProps) => {
   const [search, setSearch] = useState('');
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedTransaction, setSelectedTransaction] = useState(null);
+  const [selectedTransaction, setSelectedTransaction] = useState<SalesTransaction | null>(null);
 
   const { data, isLoading } = useQuery({
     queryKey: ['transactionSearch', search, statusFilter],
     queryFn: async () => {
-      const params = { all: true };
+      const params: SalesTransactionParams = { all: true };
       if (search) params.search = search;
       if (statusFilter !== null) params.status = statusFilter;
-      const response = await api.get('/sales-transactions', { params });
+      const response = await api.get<SalesTransactionEnvelope>('/sales-transactions', { params });
       return response.data?.sales_transactions || [];
     },
     enabled: isOpen,
@@ -24,7 +58,7 @@ const TransactionSearchableSelect = ({ value, onChange, statusFilter = null, pla
     if (value && !selectedTransaction) {
       const fetchTransaction = async () => {
         try {
-          const response = await api.get(`/sales-transactions/${value}`);
+          const response = await api.get<SalesTransaction>(`/sales-transactions/${value}`);
           setSelectedTransaction(response.data);
         } catch (error) {
           console.error('Failed to fetch transaction', error);
@@ -34,14 +68,14 @@ const TransactionSearchableSelect = ({ value, onChange, statusFilter = null, pla
     }
   }, [value, selectedTransaction]);
 
-  const handleSelect = (transaction) => {
+  const handleSelect = (transaction: SalesTransaction) => {
     setSelectedTransaction(transaction);
     onChange(transaction.id);
     setIsOpen(false);
     setSearch('');
   };
 
-  const handleClear = (e) => {
+  const handleClear = (e: MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
     setSelectedTransaction(null);
     onChange(null);
@@ -70,7 +104,12 @@ const TransactionSearchableSelect = ({ value, onChange, statusFilter = null, pla
             </button>
           )}
           <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M19 9l-7 7-7-7"
+            />
           </svg>
         </div>
       </div>
@@ -81,7 +120,7 @@ const TransactionSearchableSelect = ({ value, onChange, statusFilter = null, pla
             <input
               type="text"
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => setSearch(e.target.value)}
               placeholder="Cari no faktur..."
               className="w-full px-3 py-1.5 text-sm border border-slate-300 rounded focus:outline-none focus:border-blue-500"
               autoFocus
