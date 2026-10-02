@@ -1,5 +1,5 @@
 import React from 'react';
-import logoApp from '@/assets/logo-gatra-budget.png';
+import logoApp from '@/assets/logo.png';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import {
@@ -146,7 +146,7 @@ export default function Layout({ children }: LayoutProps) {
               className={`flex items-center ${sidebarCollapsed ? 'lg:justify-center' : 'justify-between'}`}
             >
               {!sidebarCollapsed && (
-                <img src={logoApp} className="w-[70%] mx-auto" alt="Gatra Budget App" />
+                <img src={logoApp} className="w-[50%] mx-auto" alt="Gatra Budget App" />
               )}
               <button
                 onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
