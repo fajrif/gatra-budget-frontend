@@ -1,7 +1,8 @@
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import AboutCard from '@/components/ui/AboutCard';
 import { Button } from '@/components/ui/button';
-import { Globe, MapPin, Map, Building, Users, type LucideIcon } from 'lucide-react';
+import { Briefcase, CreditCard, type LucideIcon } from 'lucide-react';
 
 interface QuickLink {
   to: string;
@@ -11,12 +12,8 @@ interface QuickLink {
 }
 
 const quickLinks: QuickLink[] = [
-  { to: '/countries', icon: Globe, label: 'Negara', color: 'text-blue-600' },
-  { to: '/provinces', icon: Map, label: 'Provinsi', color: 'text-indigo-600' },
-  { to: '/cities', icon: Building, label: 'Kota', color: 'text-violet-600' },
-  { to: '/areas', icon: MapPin, label: 'Kecamatan', color: 'text-purple-600' },
-  { to: '/my-addresses', icon: MapPin, label: 'Alamat Saya', color: 'text-emerald-600' },
-  { to: '/users', icon: Users, label: 'Pengguna', color: 'text-rose-600' },
+  { to: '/projects', icon: Briefcase, label: 'Proyek', color: 'text-blue-900' },
+  { to: '/transactions', icon: CreditCard, label: 'Transaksi', color: 'text-emerald-600' },
 ];
 
 const Dashboard = () => (
@@ -43,11 +40,8 @@ const Dashboard = () => (
         </CardContent>
       </Card>
 
-      <Card className="border-none shadow-lg">
-        <CardHeader>
-          <CardTitle className="text-base">Tentang Gatra Budget</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3 text-sm text-slate-600">
+      <AboutCard title="Tentang Gatra Budget">
+        <div className="space-y-3 text-sm text-slate-600">
           <p>
             Gatra Budget adalah aplikasi manajemen anggaran proyek. Aplikasi ini membantu Anda
             mencatat proyek beserta nilai kontraknya, menyusun anggaran per jenis biaya, memantau
@@ -59,8 +53,8 @@ const Dashboard = () => (
             <li><strong className="font-semibold">Transaksi:</strong> catat realisasi pengeluaran dan pantau status SLA pembayaran</li>
             <li><strong className="font-semibold">Laporan:</strong> biaya manajemen bulanan serta ringkasan sisa anggaran dan margin laba</li>
           </ul>
-        </CardContent>
-      </Card>
+        </div>
+      </AboutCard>
     </div>
   </div>
 );

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { authAPI } from '@/api/endpoints';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import AboutCard from '@/components/ui/AboutCard';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { User, Mail, Shield, Pencil, UserCircle, Camera } from 'lucide-react';
@@ -52,27 +53,16 @@ const UserProfile = () => {
           </div>
         </div>
 
-        {/* Info Card */}
-        <Card className="border-none shadow-lg bg-gradient-to-br from-blue-50 to-indigo-50">
-          <CardContent className="pt-6">
-            <div className="flex items-start gap-4">
-              <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
-                <UserCircle className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-slate-900 mb-2">Informasi Profil</h3>
-                <p className="text-sm text-slate-700 mb-3">
-                  Halaman ini menampilkan informasi profil Anda. Anda dapat mengubah nama dan
-                  password Anda.
-                </p>
-                <div className="space-y-1 text-sm text-slate-600">
-                  <p>• Nama lengkap dapat diubah kapan saja</p>
-                  <p>• Setelah mengubah password, Anda akan otomatis keluar dan perlu login kembali</p>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <AboutCard icon={UserCircle} title="Informasi Profil">
+          <p className="text-sm text-slate-700 mb-3">
+            Halaman ini menampilkan informasi profil Anda. Anda dapat mengubah nama dan
+            password Anda.
+          </p>
+          <div className="space-y-1 text-sm text-slate-600">
+            <p>• Nama lengkap dapat diubah kapan saja</p>
+            <p>• Setelah mengubah password, Anda akan otomatis keluar dan perlu login kembali</p>
+          </div>
+        </AboutCard>
 
         {/* Profile Information Card */}
         {isLoading ? (

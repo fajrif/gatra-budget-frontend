@@ -3,6 +3,7 @@ import { useConfirm } from '@/hooks/useConfirm';
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { usersAPI } from '@/api/endpoints';
 import { Card, CardContent } from '@/components/ui/card';
+import AboutCard from '@/components/ui/AboutCard';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -104,41 +105,28 @@ const MasterUser = () => {
           </div>
         </div>
 
-        <Card className="border-none shadow-lg bg-gradient-to-br from-blue-50 to-indigo-50">
-          <CardContent className="pt-6">
-            <div className="flex items-start gap-4">
-              <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
-                <User className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-slate-900 mb-2">
-                  Tentang Master Data User
-                </h3>
-                <p className="text-sm text-slate-700 mb-3">
-                  Master data user atau pengguna digunakan untuk akses system ini.
-                </p>
-                <div className="space-y-1 text-sm text-slate-600">
-                  <p>
-                    • <strong className="font-semibold">Email:</strong> Email pengguna yang di
-                    daftarkan
-                  </p>
-                  <p>
-                    • <strong className="font-semibold">Password:</strong> Password min. 8 karakter,
-                    mengandung huruf besar dan kecil, mengandung min. 1 symbol
-                  </p>
-                  <p>
-                    • <strong className="font-semibold">Nama Lengkap:</strong> Nama lengkap pengguna
-                    (min. 3 karakter)
-                  </p>
-                  <p>
-                    • <strong className="font-semibold">Role:</strong> Role dari pengguna (admin /
-                    user / operator)
-                  </p>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <AboutCard icon={User} title="Tentang Master Data User">
+          <p className="text-sm text-slate-700 mb-3">
+            Master data user atau pengguna digunakan untuk akses system ini.
+          </p>
+          <div className="space-y-1 text-sm text-slate-600">
+            <p>
+              • <strong className="font-semibold">Email:</strong> Email pengguna yang di daftarkan
+            </p>
+            <p>
+              • <strong className="font-semibold">Password:</strong> Password min. 8 karakter,
+              mengandung huruf besar dan kecil, mengandung min. 1 symbol
+            </p>
+            <p>
+              • <strong className="font-semibold">Nama Lengkap:</strong> Nama lengkap pengguna
+              (min. 3 karakter)
+            </p>
+            <p>
+              • <strong className="font-semibold">Role:</strong> Role dari pengguna (admin / user /
+              operator)
+            </p>
+          </div>
+        </AboutCard>
 
         <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3">
           <div className="relative w-full max-w-md">

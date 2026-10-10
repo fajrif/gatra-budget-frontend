@@ -4,6 +4,7 @@ import { addressesAPI } from '@/api/endpoints';
 import { AgGridReact } from 'ag-grid-react';
 import { appTheme } from '@/lib/agGridTheme';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import AboutCard from '@/components/ui/AboutCard';
 import { Button } from '@/components/ui/button';
 import { Plus, MapPin } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
@@ -79,49 +80,37 @@ const UserAddresses = () => {
           </div>
         </div>
 
-        <Card className="border-none shadow-lg bg-gradient-to-br from-blue-50 to-indigo-50">
-          <CardContent className="pt-6">
-            <div className="flex items-start gap-4">
-              <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
-                <MapPin className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-slate-900 mb-2">Tentang Alamat Saya</h3>
-                <p className="text-sm text-slate-700 mb-3">
-                  Alamat yang tersimpan di profil pengguna Anda.
-                </p>
-                <div className="space-y-1 text-sm text-slate-600">
-                  <p>
-                    • <strong className="font-semibold">Label:</strong> Nama singkat (mis. Rumah,
-                    Kantor)
-                  </p>
-                  <p>
-                    • <strong className="font-semibold">Alamat:</strong> Alamat jalan lengkap
-                  </p>
-                  <p>
-                    • <strong className="font-semibold">ID Negara:</strong> referensi ke{' '}
-                    <code>countries</code>
-                  </p>
-                  <p>
-                    • <strong className="font-semibold">ID Provinsi:</strong> referensi ke{' '}
-                    <code>provinces</code>
-                  </p>
-                  <p>
-                    • <strong className="font-semibold">ID Kota:</strong> referensi ke{' '}
-                    <code>cities</code>
-                  </p>
-                  <p>
-                    • <strong className="font-semibold">ID Kecamatan:</strong> referensi ke{' '}
-                    <code>areas</code> (opsional)
-                  </p>
-                  <p>
-                    • <strong className="font-semibold">Kode Pos:</strong> Kode pos
-                  </p>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <AboutCard icon={MapPin} title="Tentang Alamat Saya">
+          <p className="text-sm text-slate-700 mb-3">
+            Alamat yang tersimpan di profil pengguna Anda.
+          </p>
+          <div className="space-y-1 text-sm text-slate-600">
+            <p>
+              • <strong className="font-semibold">Label:</strong> Nama singkat (mis. Rumah, Kantor)
+            </p>
+            <p>
+              • <strong className="font-semibold">Alamat:</strong> Alamat jalan lengkap
+            </p>
+            <p>
+              • <strong className="font-semibold">ID Negara:</strong> referensi ke{' '}
+              <code>countries</code>
+            </p>
+            <p>
+              • <strong className="font-semibold">ID Provinsi:</strong> referensi ke{' '}
+              <code>provinces</code>
+            </p>
+            <p>
+              • <strong className="font-semibold">ID Kota:</strong> referensi ke <code>cities</code>
+            </p>
+            <p>
+              • <strong className="font-semibold">ID Kecamatan:</strong> referensi ke{' '}
+              <code>areas</code> (opsional)
+            </p>
+            <p>
+              • <strong className="font-semibold">Kode Pos:</strong> Kode pos
+            </p>
+          </div>
+        </AboutCard>
         <Card className="border-none shadow-lg">
           <CardHeader className="border-b border-slate-100">
             <div className="flex justify-end items-center">

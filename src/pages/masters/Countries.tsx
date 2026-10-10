@@ -4,6 +4,7 @@ import { countriesAPI } from '@/api/endpoints';
 import { AgGridReact } from 'ag-grid-react';
 import { appTheme } from '@/lib/agGridTheme';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import AboutCard from '@/components/ui/AboutCard';
 import { Button } from '@/components/ui/button';
 import { Plus, Globe } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
@@ -80,29 +81,19 @@ const Countries = () => {
             <p className="text-slate-500 mt-1">Kelola data referensi negara</p>
           </div>
         </div>
-        <Card className="border-none shadow-lg bg-gradient-to-br from-blue-50 to-indigo-50">
-          <CardContent className="pt-6">
-            <div className="flex items-start gap-4">
-              <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
-                <Globe className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-slate-900 mb-2">Tentang Negara</h3>
-                <p className="text-sm text-slate-700 mb-3">
-                  Data referensi negara yang digunakan di seluruh aplikasi.
-                </p>
-                <div className="space-y-1 text-sm text-slate-600">
-                  <p>
-                    • <strong className="font-semibold">Kode:</strong> ISO 3166-1 alpha-2
-                  </p>
-                  <p>
-                    • <strong className="font-semibold">Nama:</strong> Nama negara
-                  </p>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <AboutCard icon={Globe} title="Tentang Negara">
+          <p className="text-sm text-slate-700 mb-3">
+            Data referensi negara yang digunakan di seluruh aplikasi.
+          </p>
+          <div className="space-y-1 text-sm text-slate-600">
+            <p>
+              • <strong className="font-semibold">Kode:</strong> ISO 3166-1 alpha-2
+            </p>
+            <p>
+              • <strong className="font-semibold">Nama:</strong> Nama negara
+            </p>
+          </div>
+        </AboutCard>
         <Card className="border-none shadow-lg">
           <CardHeader className="border-b border-slate-100">
             <div className="flex justify-end items-center">

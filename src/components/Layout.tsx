@@ -7,17 +7,12 @@ import {
   LogOut,
   Menu,
   UserCog,
-  MapPin,
-  Globe,
-  Map,
   Building2,
   ChevronDown,
   ChevronLeft,
   ChevronRight,
-  Database,
   FileBarChart,
   TrendingUp,
-  Home,
   Wallet,
   FileText,
   Receipt,
@@ -48,32 +43,12 @@ interface NavGroup {
 }
 
 const navigationItems: NavItem[] = [
-  {
-    title: 'Dashboard',
-    url: '/dashboard',
-    icon: LayoutDashboard,
-    roles: ['admin', 'user'],
-  },
-  {
-    title: 'Users',
-    url: '/users',
-    icon: UserCog,
-    roles: ['admin'],
-  },
+  { title: 'Dashboard', url: '/dashboard', icon: LayoutDashboard, roles: ['admin', 'user'] },
+  { title: 'Users', url: '/users', icon: UserCog, roles: ['admin'] },
+  { title: 'Klien', url: '/clients', icon: Building2, roles: ['admin'] },
+  { title: 'Jenis Kontrak', url: '/contract-types', icon: FileText, roles: ['admin'] },
+  { title: 'Jenis Biaya', url: '/cost-types', icon: Receipt, roles: ['admin'] },
 ];
-
-const navigationMastersGroup: NavGroup = {
-  title: 'Referensi Alamat',
-  icon: Database,
-  key: 'addressReference',
-  roles: ['admin'],
-  children: [
-    { title: 'Negara', url: '/countries', icon: Globe, roles: ['admin'] },
-    { title: 'Provinsi', url: '/provinces', icon: Map, roles: ['admin'] },
-    { title: 'Kota', url: '/cities', icon: Building2, roles: ['admin'] },
-    { title: 'Kecamatan', url: '/areas', icon: MapPin, roles: ['admin'] },
-  ],
-};
 
 const navigationBudgetGroup: NavGroup = {
   title: 'Manajemen Anggaran',
@@ -83,9 +58,6 @@ const navigationBudgetGroup: NavGroup = {
   children: [
     { title: 'Proyek', url: '/projects', icon: Briefcase, roles: ['admin', 'user'] },
     { title: 'Transaksi', url: '/transactions', icon: CreditCard, roles: ['admin', 'user'] },
-    { title: 'Klien', url: '/clients', icon: Building2, roles: ['admin'] },
-    { title: 'Jenis Kontrak', url: '/contract-types', icon: FileText, roles: ['admin'] },
-    { title: 'Jenis Biaya', url: '/cost-types', icon: Receipt, roles: ['admin'] },
   ],
 };
 
@@ -130,13 +102,6 @@ export default function Layout({ children }: LayoutProps) {
   const filteredNavItems = navigationItems.filter(
     (item) => !item.roles || item.roles.includes(user?.role as UserRole),
   );
-
-  const filteredMasterChildren = navigationMastersGroup.children.filter(
-    (item) => !item.roles || item.roles.includes(user?.role as UserRole),
-  );
-
-  const canSeeMastersGroup =
-    navigationMastersGroup.roles.includes(user?.role as UserRole) && filteredMasterChildren.length > 0;
 
   const filteredBudgetChildren = navigationBudgetGroup.children.filter(
     (item) => !item.roles || item.roles.includes(user?.role as UserRole),
@@ -451,105 +416,6 @@ export default function Layout({ children }: LayoutProps) {
                 })
               }
             </div>
-
-            {/* Collapsible Masters Group */}
-            {canSeeMastersGroup && (
-              <Collapsible
-                open={isMenuOpen('addressReference')}
-                onOpenChange={() => toggleMenu('addressReference')}
-              >
-                <CollapsibleTrigger asChild>
-                  {sidebarCollapsed ? (
-                    <SidebarDropdown
-                      trigger={
-                        <button
-                          className={`
-                            flex items-center lg:justify-center lg:px-0 py-2.5 text-sm rounded-lg
-                            transition-all duration-200 hover:bg-slate-100
-                            ${
-                              filteredMasterChildren.some(
-                                (item) => location.pathname === item.url,
-                              )
-                                ? 'text-blue-900 font-medium'
-                                : 'text-slate-700'
-                            }
-                          `}
-                        >
-                          <Database className="w-5 h-5" />
-                        </button>
-                      }
-                      title={navigationMastersGroup.title}
-                    >
-                      {filteredMasterChildren.map((item) => {
-                        const isActive = location.pathname === item.url;
-                        return (
-                          <Link
-                            key={item.title}
-                            to={item.url}
-                            onClick={() => setSidebarOpen(false)}
-                            className={`
-                              flex items-center gap-3 px-3 py-2 text-sm transition-all duration-200
-                              ${
-                                isActive
-                                  ? 'bg-blue-50 text-blue-900 font-medium'
-                                  : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-                              }
-                            `}
-                          >
-                            <item.icon className="w-4 h-4" />
-                            <span>{item.title}</span>
-                          </Link>
-                        );
-                      })}
-                    </SidebarDropdown>
-                  ) : (
-                    <button
-                      className={`
-                        flex w-full items-center gap-3 px-3 py-2.5 text-sm rounded-lg
-                        transition-all duration-200 hover:bg-slate-100
-                        ${
-                          filteredMasterChildren.some((item) => location.pathname === item.url)
-                            ? 'text-blue-900 font-medium'
-                            : 'text-slate-700'
-                        }
-                      `}
-                    >
-                      <Database className="w-5 h-5" />
-                      <span className="flex-1 text-left">{navigationMastersGroup.title}</span>
-                      <ChevronDown
-                        className={`w-4 h-4 transition-transform duration-200 ${isMenuOpen('addressReference') ? 'rotate-180' : ''}`}
-                      />
-                    </button>
-                  )}
-                </CollapsibleTrigger>
-
-                <CollapsibleContent>
-                  <div className="ml-4 pl-4 border-l border-slate-200 space-y-1 mt-1">
-                    {filteredMasterChildren.map((item) => {
-                      const isActive = location.pathname === item.url;
-                      return (
-                        <Link
-                          key={item.title}
-                          to={item.url}
-                          onClick={() => setSidebarOpen(false)}
-                          className={`
-                            flex items-center gap-3 px-3 py-2 text-sm rounded-lg transition-all duration-200
-                            ${
-                              isActive
-                                ? 'bg-blue-50 text-blue-900 font-medium'
-                                : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-                            }
-                          `}
-                        >
-                          <item.icon className="w-4 h-4" />
-                          <span>{item.title}</span>
-                        </Link>
-                      );
-                    })}
-                  </div>
-                </CollapsibleContent>
-              </Collapsible>
-            )}
           </nav>
 
           {/* Footer */}

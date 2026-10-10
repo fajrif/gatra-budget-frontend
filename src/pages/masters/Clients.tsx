@@ -4,6 +4,7 @@ import { clientsAPI } from '@/api/endpoints';
 import { AgGridReact } from 'ag-grid-react';
 import { appTheme } from '@/lib/agGridTheme';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import AboutCard from '@/components/ui/AboutCard';
 import { Button } from '@/components/ui/button';
 import { Plus, Building2 } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
@@ -76,21 +77,11 @@ const Clients = () => {
             <p className="text-slate-500 mt-1">Kelola data master klien</p>
           </div>
         </div>
-        <Card className="border-none shadow-lg bg-gradient-to-br from-blue-50 to-indigo-50">
-          <CardContent className="pt-6">
-            <div className="flex items-start gap-4">
-              <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
-                <Building2 className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-slate-900 mb-2">Tentang Klien</h3>
-                <p className="text-sm text-slate-700 mb-3">
-                  Data master klien/pelanggan yang dirujuk oleh proyek.
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <AboutCard icon={Building2} title="Tentang Klien">
+          <p className="text-sm text-slate-700 mb-3">
+            Data master klien/pelanggan yang dirujuk oleh proyek.
+          </p>
+        </AboutCard>
         <Card className="border-none shadow-lg">
           <CardHeader className="border-b border-slate-100">
             <div className="flex justify-end items-center">
