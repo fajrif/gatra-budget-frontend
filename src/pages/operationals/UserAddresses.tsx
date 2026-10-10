@@ -6,7 +6,6 @@ import { appTheme } from '@/lib/agGridTheme';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Plus, MapPin } from 'lucide-react';
-import { useConfirm } from '@/hooks/useConfirm';
 import { useToast } from '@/components/ui/use-toast';
 import AddEditAddressDialog, {
   type AddressEditingItem,
@@ -18,7 +17,6 @@ import type { Address } from '@/types';
 const UserAddresses = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  const confirm = useConfirm();
   const gridRef = useRef<AgGridReact | null>(null);
   const [showDialog, setShowDialog] = useState(false);
   const [editingItem, setEditingItem] = useState<AddressEditingItem | null>(null);
@@ -33,23 +31,24 @@ const UserAddresses = () => {
     mutationFn: (id: string) => addressesAPI.deleteMine(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['my-addresses'] });
-      toast({ title: 'Success', description: 'Address deleted.', variant: 'success' });
+      toast({ title: 'Success', description: 'Alamat berhasil dihapus.', variant: 'success' });
     },
     onError: (err) => {
       toast({
         title: 'Error',
-        description: getErrorMessage(err, 'Failed to delete address.'),
+        description: getErrorMessage(err, 'Gagal menghapus alamat.'),
         variant: 'destructive',
       });
     },
   });
 
+  // ActionMenuCellRenderer already confirms destructive actions before calling
+  // onDelete, so this just performs the mutation.
   const handleDelete = useCallback(
-    async (row: Address) => {
-      const ok = await confirm({ message: `Delete address "${row.name}"?`, variant: 'danger' });
-      if (ok) deleteMutation.mutate(row.id);
+    (row: Address) => {
+      deleteMutation.mutate(row.id);
     },
-    [confirm, deleteMutation],
+    [deleteMutation],
   );
 
   const columnDefs = useMemo(
@@ -75,8 +74,8 @@ const UserAddresses = () => {
       <div className="max-w-7xl mx-auto space-y-6">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
-            <h1 className="text-2xl font-semibold text-slate-900">My Addresses</h1>
-            <p className="text-slate-500 mt-1">Manage your saved addresses</p>
+            <h1 className="text-2xl font-semibold text-slate-900">Alamat Saya</h1>
+            <p className="text-slate-500 mt-1">Kelola alamat tersimpan Anda</p>
           </div>
         </div>
 
@@ -87,36 +86,36 @@ const UserAddresses = () => {
                 <MapPin className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h3 className="font-semibold text-slate-900 mb-2">About My Addresses</h3>
+                <h3 className="font-semibold text-slate-900 mb-2">Tentang Alamat Saya</h3>
                 <p className="text-sm text-slate-700 mb-3">
-                  Addresses saved to your user profile.
+                  Alamat yang tersimpan di profil pengguna Anda.
                 </p>
                 <div className="space-y-1 text-sm text-slate-600">
                   <p>
-                    • <strong className="font-semibold">Label:</strong> Short name (e.g. Home,
-                    Office)
+                    • <strong className="font-semibold">Label:</strong> Nama singkat (mis. Rumah,
+                    Kantor)
                   </p>
                   <p>
-                    • <strong className="font-semibold">Address:</strong> Full street address
+                    • <strong className="font-semibold">Alamat:</strong> Alamat jalan lengkap
                   </p>
                   <p>
-                    • <strong className="font-semibold">Country ID:</strong> reference to{' '}
+                    • <strong className="font-semibold">ID Negara:</strong> referensi ke{' '}
                     <code>countries</code>
                   </p>
                   <p>
-                    • <strong className="font-semibold">Province ID:</strong> reference to{' '}
+                    • <strong className="font-semibold">ID Provinsi:</strong> referensi ke{' '}
                     <code>provinces</code>
                   </p>
                   <p>
-                    • <strong className="font-semibold">City ID:</strong> reference to{' '}
+                    • <strong className="font-semibold">ID Kota:</strong> referensi ke{' '}
                     <code>cities</code>
                   </p>
                   <p>
-                    • <strong className="font-semibold">Area ID:</strong> reference to{' '}
-                    <code>areas</code> (optional)
+                    • <strong className="font-semibold">ID Kecamatan:</strong> referensi ke{' '}
+                    <code>areas</code> (opsional)
                   </p>
                   <p>
-                    • <strong className="font-semibold">Zipcode:</strong> Postal code
+                    • <strong className="font-semibold">Kode Pos:</strong> Kode pos
                   </p>
                 </div>
               </div>
@@ -131,16 +130,16 @@ const UserAddresses = () => {
                 className="bg-blue-900 hover:bg-blue-800"
               >
                 <Plus className="w-4 h-4 mr-2" />
-                Add Address
+                Tambah Alamat
               </Button>
             </div>
           </CardHeader>
           <CardContent className="pt-6">
             {isLoading ? (
-              <div className="text-center py-8">Loading...</div>
+              <div className="text-center py-8">Memuat...</div>
             ) : (data?.length ?? 0) === 0 ? (
               <div className="text-center py-8 text-slate-500">
-                No addresses yet. Add your first address.
+                Belum ada alamat. Tambahkan alamat pertama Anda.
               </div>
             ) : (
               <div className="ag-grid-wrapper" style={{ height: 600, width: '100%' }}>
@@ -158,7 +157,7 @@ const UserAddresses = () => {
                   suppressCellFocus
                   tooltipShowDelay={200}
                   tooltipHideDelay={2000}
-                  overlayNoRowsTemplate="<span>No data.</span>"
+                  overlayNoRowsTemplate="<span>Tidak ada data.</span>"
                 />
               </div>
             )}

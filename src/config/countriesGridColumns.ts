@@ -11,16 +11,16 @@ export const createCountriesColumnDefs = ({
 }: GridActionHandlers<Country>): ColDef<Country>[] => [
   {
     field: 'code',
-    headerName: 'Code',
+    headerName: 'Kode',
     width: 90,
     cellStyle: { fontWeight: 600, textTransform: 'uppercase' },
   },
   {
     field: 'name',
-    headerName: 'Country Name',
+    headerName: 'Nama Negara',
   },
   {
-    headerName: 'Actions',
+    headerName: 'Aksi',
     width: 60,
     resizable: false,
     sortable: false,

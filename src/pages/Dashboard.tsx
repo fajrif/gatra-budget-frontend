@@ -11,12 +11,12 @@ interface QuickLink {
 }
 
 const quickLinks: QuickLink[] = [
-  { to: '/countries', icon: Globe, label: 'Countries', color: 'text-blue-600' },
-  { to: '/provinces', icon: Map, label: 'Provinces', color: 'text-indigo-600' },
-  { to: '/cities', icon: Building, label: 'Cities', color: 'text-violet-600' },
-  { to: '/areas', icon: MapPin, label: 'Areas', color: 'text-purple-600' },
-  { to: '/my-addresses', icon: MapPin, label: 'My Addresses', color: 'text-emerald-600' },
-  { to: '/users', icon: Users, label: 'Users', color: 'text-rose-600' },
+  { to: '/countries', icon: Globe, label: 'Negara', color: 'text-blue-600' },
+  { to: '/provinces', icon: Map, label: 'Provinsi', color: 'text-indigo-600' },
+  { to: '/cities', icon: Building, label: 'Kota', color: 'text-violet-600' },
+  { to: '/areas', icon: MapPin, label: 'Kecamatan', color: 'text-purple-600' },
+  { to: '/my-addresses', icon: MapPin, label: 'Alamat Saya', color: 'text-emerald-600' },
+  { to: '/users', icon: Users, label: 'Pengguna', color: 'text-rose-600' },
 ];
 
 const Dashboard = () => (
@@ -24,12 +24,12 @@ const Dashboard = () => (
     <div className="max-w-7xl mx-auto space-y-6">
       <div>
         <h1 className="text-2xl font-semibold text-slate-900">Dashboard</h1>
-        <p className="text-slate-500 mt-1">Welcome to Gatra Budget — your Go + React starter kit</p>
+        <p className="text-slate-500 mt-1">Gatra Budget — sistem manajemen anggaran proyek</p>
       </div>
 
       <Card className="border-none shadow-lg">
         <CardHeader>
-          <CardTitle className="text-base">Quick Navigation</CardTitle>
+          <CardTitle className="text-base">Navigasi Cepat</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-wrap gap-3">
           {quickLinks.map(({ to, icon: LinkIcon, label, color }) => (
@@ -45,19 +45,19 @@ const Dashboard = () => (
 
       <Card className="border-none shadow-lg">
         <CardHeader>
-          <CardTitle className="text-base">About This Gatra Budget</CardTitle>
+          <CardTitle className="text-base">Tentang Gatra Budget</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3 text-sm text-slate-600">
           <p>
-            This project is a clean starter template for Go REST API + React SPA projects.
-            It includes a full auth system (JWT, roles), an address hierarchy as a working
-            CRUD reference, and AG Grid + ConfirmDialog + PDF export patterns.
+            Gatra Budget adalah aplikasi manajemen anggaran proyek. Aplikasi ini membantu Anda
+            mencatat proyek beserta nilai kontraknya, menyusun anggaran per jenis biaya, memantau
+            realisasi pengeluaran, serta menghitung biaya manajemen dan margin laba secara otomatis.
           </p>
           <ul className="list-disc list-inside space-y-1 text-slate-500">
-            <li>Backend: Go + Fiber + GORM + PostgreSQL</li>
-            <li>Frontend: React 19 + Vite + TailwindCSS + React Query</li>
-            <li>Auth: JWT with role-based access (admin / user / operator)</li>
-            <li>Reference CRUD: Countries → Provinces → Cities → Areas → Addresses</li>
+            <li><strong className="font-semibold">Proyek:</strong> kelola proyek, nilai pekerjaan, periode, dan status kontrak</li>
+            <li><strong className="font-semibold">Anggaran:</strong> susun alokasi biaya per proyek dengan skema lumpsum atau bulanan</li>
+            <li><strong className="font-semibold">Transaksi:</strong> catat realisasi pengeluaran dan pantau status SLA pembayaran</li>
+            <li><strong className="font-semibold">Laporan:</strong> biaya manajemen bulanan serta ringkasan sisa anggaran dan margin laba</li>
           </ul>
         </CardContent>
       </Card>

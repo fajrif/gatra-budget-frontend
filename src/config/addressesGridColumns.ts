@@ -16,26 +16,26 @@ export const createAddressesColumnDefs = ({
   },
   {
     field: 'address',
-    headerName: 'Address',
+    headerName: 'Alamat',
     cellRenderer: TooltipCellRenderer,
   },
   {
     field: 'city.name',
-    headerName: 'City',
+    headerName: 'Kota',
     width: 160,
   },
   {
     field: 'province.name',
-    headerName: 'Province',
+    headerName: 'Provinsi',
     width: 160,
   },
   {
     field: 'zipcode',
-    headerName: 'Zipcode',
+    headerName: 'Kode Pos',
     width: 100,
   },
   {
-    headerName: 'Actions',
+    headerName: 'Aksi',
     width: 60,
     resizable: false,
     sortable: false,

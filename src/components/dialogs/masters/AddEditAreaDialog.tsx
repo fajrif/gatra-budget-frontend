@@ -67,7 +67,7 @@ const AddEditAreaDialog = ({ isOpen, onClose, editingItem, onFinish }: AddEditAr
     onSuccess: () => {
       toast({
         title: 'Success',
-        description: `Area ${editingItem ? 'updated' : 'created'} successfully.`,
+        description: `Kecamatan ${editingItem ? 'berhasil diperbarui' : 'berhasil ditambahkan'}.`,
         variant: 'success',
       });
       onFinish(true);
@@ -75,7 +75,7 @@ const AddEditAreaDialog = ({ isOpen, onClose, editingItem, onFinish }: AddEditAr
     onError: (err) => {
       toast({
         title: 'Error',
-        description: getErrorMessage(err, 'Failed to save area.'),
+        description: getErrorMessage(err, 'Gagal menyimpan kecamatan.'),
         variant: 'destructive',
       });
     },
@@ -87,16 +87,16 @@ const AddEditAreaDialog = ({ isOpen, onClose, editingItem, onFinish }: AddEditAr
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>{editingItem ? 'Edit Area' : 'Add Area'}</DialogTitle>
+          <DialogTitle>{editingItem ? 'Ubah Kecamatan' : 'Tambah Kecamatan'}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit((data) => saveMutation.mutate(data))} className="space-y-4">
           <div>
-            <Label>Area Name</Label>
+            <Label>Nama Kecamatan</Label>
             <Input {...register('name')} placeholder="Menteng" className="mt-1" />
             {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name.message}</p>}
           </div>
           <div>
-            <Label>City</Label>
+            <Label>Kota</Label>
             <Controller
               name="city_id"
               control={control}
@@ -105,7 +105,7 @@ const AddEditAreaDialog = ({ isOpen, onClose, editingItem, onFinish }: AddEditAr
                   options={cityOptions}
                   value={field.value}
                   onChange={field.onChange}
-                  placeholder="Select city..."
+                  placeholder="Pilih kota..."
                   className="mt-1"
                 />
               )}
@@ -116,7 +116,7 @@ const AddEditAreaDialog = ({ isOpen, onClose, editingItem, onFinish }: AddEditAr
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onClose}>
-              Cancel
+              Batal
             </Button>
             <Button
               type="submit"
@@ -128,7 +128,7 @@ const AddEditAreaDialog = ({ isOpen, onClose, editingItem, onFinish }: AddEditAr
               ) : (
                 <>
                   <Save className="w-4 h-4 mr-2" />
-                  Save
+                  Simpan
                 </>
               )}
             </Button>

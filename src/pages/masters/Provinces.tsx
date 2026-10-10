@@ -6,7 +6,6 @@ import { appTheme } from '@/lib/agGridTheme';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Plus, Globe } from 'lucide-react';
-import { useConfirm } from '@/hooks/useConfirm';
 import { useToast } from '@/components/ui/use-toast';
 import AddEditProvinceDialog, {
   type ProvinceFormValues,
@@ -20,7 +19,6 @@ type ProvinceEditingItem = ProvinceFormValues & { id: string };
 const Provinces = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  const confirm = useConfirm();
   const gridRef = useRef<AgGridReact | null>(null);
   const [showDialog, setShowDialog] = useState(false);
   const [editingItem, setEditingItem] = useState<ProvinceEditingItem | null>(null);
@@ -35,23 +33,24 @@ const Provinces = () => {
     mutationFn: (id: string) => provincesAPI.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['provinces'] });
-      toast({ title: 'Success', description: 'Province deleted.', variant: 'success' });
+      toast({ title: 'Success', description: 'Provinsi berhasil dihapus.', variant: 'success' });
     },
     onError: (err) => {
       toast({
         title: 'Error',
-        description: getErrorMessage(err, 'Failed to delete province.'),
+        description: getErrorMessage(err, 'Gagal menghapus provinsi.'),
         variant: 'destructive',
       });
     },
   });
 
+  // ActionMenuCellRenderer already confirms destructive actions before calling
+  // onDelete, so this just performs the mutation.
   const handleDelete = useCallback(
-    async (row: Province) => {
-      const ok = await confirm({ message: `Delete province "${row.name}"?`, variant: 'danger' });
-      if (ok) deleteMutation.mutate(row.id);
+    (row: Province) => {
+      deleteMutation.mutate(row.id);
     },
-    [confirm, deleteMutation],
+    [deleteMutation],
   );
 
   const columnDefs = useMemo(
@@ -77,8 +76,8 @@ const Provinces = () => {
       <div className="max-w-7xl mx-auto space-y-6">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
-            <h1 className="text-2xl font-semibold text-slate-900">Provinces</h1>
-            <p className="text-slate-500 mt-1">Manage province reference data</p>
+            <h1 className="text-2xl font-semibold text-slate-900">Provinsi</h1>
+            <p className="text-slate-500 mt-1">Kelola data referensi provinsi</p>
           </div>
         </div>
         <Card className="border-none shadow-lg bg-gradient-to-br from-blue-50 to-indigo-50">
@@ -88,16 +87,16 @@ const Provinces = () => {
                 <Globe className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h3 className="font-semibold text-slate-900 mb-2">About Provinces</h3>
+                <h3 className="font-semibold text-slate-900 mb-2">Tentang Provinsi</h3>
                 <p className="text-sm text-slate-700 mb-3">
-                  Province reference data used across the application.
+                  Data referensi provinsi yang digunakan di seluruh aplikasi.
                 </p>
                 <div className="space-y-1 text-sm text-slate-600">
                   <p>
-                    • <strong className="font-semibold">Name:</strong> Province name
+                    • <strong className="font-semibold">Nama:</strong> Nama provinsi
                   </p>
                   <p>
-                    • <strong className="font-semibold">Country ID:</strong> reference to{' '}
+                    • <strong className="font-semibold">ID Negara:</strong> referensi ke{' '}
                     <code>countries</code>
                   </p>
                 </div>
@@ -113,16 +112,16 @@ const Provinces = () => {
                 className="bg-blue-900 hover:bg-blue-800"
               >
                 <Plus className="w-4 h-4 mr-2" />
-                Add Province
+                Tambah Provinsi
               </Button>
             </div>
           </CardHeader>
           <CardContent className="pt-6">
             {isLoading ? (
-              <div className="text-center py-8">Loading...</div>
+              <div className="text-center py-8">Memuat...</div>
             ) : (data?.length ?? 0) === 0 ? (
               <div className="text-center py-8 text-slate-500">
-                No provinces yet. Add your first province.
+                Belum ada provinsi. Tambahkan provinsi pertama Anda.
               </div>
             ) : (
               <div className="ag-grid-wrapper" style={{ height: 500, width: '100%' }}>
@@ -140,7 +139,7 @@ const Provinces = () => {
                   suppressCellFocus
                   tooltipShowDelay={200}
                   tooltipHideDelay={2000}
-                  overlayNoRowsTemplate="<span>No data.</span>"
+                  overlayNoRowsTemplate="<span>Tidak ada data.</span>"
                 />
               </div>
             )}

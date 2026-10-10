@@ -150,7 +150,7 @@ const AddEditUserDialog = ({ isOpen, onClose, editingUser, onFinish }: AddEditUs
     <Dialog open={isOpen} onOpenChange={onClosing}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>{editingUser ? 'Edit User' : 'Tambah User Baru'}</DialogTitle>
+          <DialogTitle>{editingUser ? 'Ubah User' : 'Tambah User Baru'}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit(onHandleSubmit)}>
           <div className="grid gap-4 py-4">

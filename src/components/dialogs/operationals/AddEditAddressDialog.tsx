@@ -146,7 +146,7 @@ const AddEditAddressDialog = ({
     onSuccess: () => {
       toast({
         title: 'Success',
-        description: `Address ${editingItem ? 'updated' : 'created'} successfully.`,
+        description: `Alamat ${editingItem ? 'berhasil diperbarui' : 'berhasil ditambahkan'}.`,
         variant: 'success',
       });
       onFinish(true);
@@ -154,7 +154,7 @@ const AddEditAddressDialog = ({
     onError: (err) => {
       toast({
         title: 'Error',
-        description: getErrorMessage(err, 'Failed to save address.'),
+        description: getErrorMessage(err, 'Gagal menyimpan alamat.'),
         variant: 'destructive',
       });
     },
@@ -167,16 +167,16 @@ const AddEditAddressDialog = ({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>{editingItem ? 'Edit Address' : 'Add Address'}</DialogTitle>
+          <DialogTitle>{editingItem ? 'Ubah Alamat' : 'Tambah Alamat'}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit((data) => saveMutation.mutate(data))} className="space-y-4">
           <div>
             <Label>Label</Label>
-            <Input {...register('name')} placeholder="e.g. Home, Office" className="mt-1" />
+            <Input {...register('name')} placeholder="mis. Rumah, Kantor" className="mt-1" />
             {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name.message}</p>}
           </div>
           <div>
-            <Label>Full Address</Label>
+            <Label>Alamat Lengkap</Label>
             <Textarea
               {...register('address')}
               placeholder="Jl. Sudirman No. 1"
@@ -189,7 +189,7 @@ const AddEditAddressDialog = ({
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label>Country</Label>
+              <Label>Negara</Label>
               <Controller
                 name="country_id"
                 control={control}
@@ -206,7 +206,7 @@ const AddEditAddressDialog = ({
                       setSelectedProvinceId('');
                       setSelectedCityId('');
                     }}
-                    placeholder="Select..."
+                    placeholder="Pilih..."
                     className="mt-1"
                   />
                 )}
@@ -216,7 +216,7 @@ const AddEditAddressDialog = ({
               )}
             </div>
             <div>
-              <Label>Province</Label>
+              <Label>Provinsi</Label>
               <Controller
                 name="province_id"
                 control={control}
@@ -231,7 +231,7 @@ const AddEditAddressDialog = ({
                       setValue('area_id', '');
                       setSelectedCityId('');
                     }}
-                    placeholder="Select..."
+                    placeholder="Pilih..."
                     className="mt-1"
                     disabled={!selectedCountryId}
                   />
@@ -242,7 +242,7 @@ const AddEditAddressDialog = ({
               )}
             </div>
             <div>
-              <Label>City</Label>
+              <Label>Kota</Label>
               <Controller
                 name="city_id"
                 control={control}
@@ -255,7 +255,7 @@ const AddEditAddressDialog = ({
                       setSelectedCityId(val);
                       setValue('area_id', '');
                     }}
-                    placeholder="Select..."
+                    placeholder="Pilih..."
                     className="mt-1"
                     disabled={!selectedProvinceId}
                   />
@@ -267,7 +267,7 @@ const AddEditAddressDialog = ({
             </div>
             <div>
               <Label>
-                Area <span className="text-slate-400 text-xs">(optional)</span>
+                Area <span className="text-slate-400 text-xs">(opsional)</span>
               </Label>
               <Controller
                 name="area_id"
@@ -277,7 +277,7 @@ const AddEditAddressDialog = ({
                     options={mapOptions(areasData)}
                     value={field.value}
                     onChange={field.onChange}
-                    placeholder="Select..."
+                    placeholder="Pilih..."
                     className="mt-1"
                     disabled={!selectedCityId}
                     clearable
@@ -288,13 +288,13 @@ const AddEditAddressDialog = ({
           </div>
           <div>
             <Label>
-              Zipcode <span className="text-slate-400 text-xs">(optional)</span>
+              Kode Pos <span className="text-slate-400 text-xs">(opsional)</span>
             </Label>
             <Input {...register('zipcode')} placeholder="12345" className="mt-1 w-32" />
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onClose}>
-              Cancel
+              Batal
             </Button>
             <Button
               type="submit"
@@ -306,7 +306,7 @@ const AddEditAddressDialog = ({
               ) : (
                 <>
                   <Save className="w-4 h-4 mr-2" />
-                  Save
+                  Simpan
                 </>
               )}
             </Button>

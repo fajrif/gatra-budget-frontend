@@ -11,15 +11,15 @@ export const createProvincesColumnDefs = ({
 }: GridActionHandlers<Province>): ColDef<Province>[] => [
   {
     field: 'name',
-    headerName: 'Province Name',
+    headerName: 'Nama Provinsi',
   },
   {
     field: 'country.name',
-    headerName: 'Country',
+    headerName: 'Negara',
     width: 160,
   },
   {
-    headerName: 'Actions',
+    headerName: 'Aksi',
     width: 60,
     resizable: false,
     sortable: false,

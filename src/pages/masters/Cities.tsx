@@ -6,7 +6,6 @@ import { appTheme } from '@/lib/agGridTheme';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Plus, Building } from 'lucide-react';
-import { useConfirm } from '@/hooks/useConfirm';
 import { useToast } from '@/components/ui/use-toast';
 import AddEditCityDialog, {
   type CityFormValues,
@@ -20,7 +19,6 @@ type CityEditingItem = CityFormValues & { id: string };
 const Cities = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  const confirm = useConfirm();
   const gridRef = useRef<AgGridReact | null>(null);
   const [showDialog, setShowDialog] = useState(false);
   const [editingItem, setEditingItem] = useState<CityEditingItem | null>(null);
@@ -35,23 +33,24 @@ const Cities = () => {
     mutationFn: (id: string) => citiesAPI.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['cities'] });
-      toast({ title: 'Success', description: 'City deleted.', variant: 'success' });
+      toast({ title: 'Success', description: 'Kota berhasil dihapus.', variant: 'success' });
     },
     onError: (err) => {
       toast({
         title: 'Error',
-        description: getErrorMessage(err, 'Failed to delete city.'),
+        description: getErrorMessage(err, 'Gagal menghapus kota.'),
         variant: 'destructive',
       });
     },
   });
 
+  // ActionMenuCellRenderer already confirms destructive actions before calling
+  // onDelete, so this just performs the mutation.
   const handleDelete = useCallback(
-    async (row: City) => {
-      const ok = await confirm({ message: `Delete city "${row.name}"?`, variant: 'danger' });
-      if (ok) deleteMutation.mutate(row.id);
+    (row: City) => {
+      deleteMutation.mutate(row.id);
     },
-    [confirm, deleteMutation],
+    [deleteMutation],
   );
 
   const columnDefs = useMemo(
@@ -77,8 +76,8 @@ const Cities = () => {
       <div className="max-w-7xl mx-auto space-y-6">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
-            <h1 className="text-2xl font-semibold text-slate-900">Cities</h1>
-            <p className="text-slate-500 mt-1">Manage city reference data</p>
+            <h1 className="text-2xl font-semibold text-slate-900">Kota</h1>
+            <p className="text-slate-500 mt-1">Kelola data referensi kota</p>
           </div>
         </div>
 
@@ -89,16 +88,16 @@ const Cities = () => {
                 <Building className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h3 className="font-semibold text-slate-900 mb-2">About Cities</h3>
+                <h3 className="font-semibold text-slate-900 mb-2">Tentang Kota</h3>
                 <p className="text-sm text-slate-700 mb-3">
-                  City reference data used across the application.
+                  Data referensi kota yang digunakan di seluruh aplikasi.
                 </p>
                 <div className="space-y-1 text-sm text-slate-600">
                   <p>
-                    • <strong className="font-semibold">Name:</strong> City name
+                    • <strong className="font-semibold">Nama:</strong> Nama kota
                   </p>
                   <p>
-                    • <strong className="font-semibold">Province ID:</strong> reference to{' '}
+                    • <strong className="font-semibold">ID Provinsi:</strong> referensi ke{' '}
                     <code>provinces</code>
                   </p>
                 </div>
@@ -114,16 +113,16 @@ const Cities = () => {
                 className="bg-blue-900 hover:bg-blue-800"
               >
                 <Plus className="w-4 h-4 mr-2" />
-                Add City
+                Tambah Kota
               </Button>
             </div>
           </CardHeader>
           <CardContent className="pt-6">
             {isLoading ? (
-              <div className="text-center py-8">Loading...</div>
+              <div className="text-center py-8">Memuat...</div>
             ) : (data?.length ?? 0) === 0 ? (
               <div className="text-center py-8 text-slate-500">
-                No cities yet. Add your first city.
+                Belum ada kota. Tambahkan kota pertama Anda.
               </div>
             ) : (
               <div className="ag-grid-wrapper" style={{ height: 500, width: '100%' }}>
@@ -141,7 +140,7 @@ const Cities = () => {
                   suppressCellFocus
                   tooltipShowDelay={200}
                   tooltipHideDelay={2000}
-                  overlayNoRowsTemplate="<span>No data.</span>"
+                  overlayNoRowsTemplate="<span>Tidak ada data.</span>"
                 />
               </div>
             )}

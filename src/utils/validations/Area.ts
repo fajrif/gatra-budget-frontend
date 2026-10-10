@@ -1,8 +1,8 @@
 import { z } from 'zod';
 
 export const areaSchema = z.object({
-  name: z.string().min(1, 'Name is required'),
-  city_id: z.string().uuid('Please select a city'),
+  name: z.string().min(1, 'Nama wajib diisi'),
+  city_id: z.string().uuid('Silakan pilih kota'),
 });
 
 export type AreaFormData = z.infer<typeof areaSchema>;

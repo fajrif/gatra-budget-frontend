@@ -2,24 +2,24 @@ import type { InputHTMLAttributes } from 'react';
 import { Controller, type Control, type FieldPath, type FieldValues } from 'react-hook-form';
 import { Input } from '@/components/ui/input';
 
-export interface CurrencyInputProps
+export interface CurrencyInputProps<TFieldValues extends FieldValues = FieldValues>
   extends Omit<InputHTMLAttributes<HTMLInputElement>, 'value' | 'onChange' | 'name'> {
   /** Provide both `control` and `name` to run in React Hook Form mode. */
-  control?: Control<FieldValues>;
-  name?: FieldPath<FieldValues>;
+  control?: Control<TFieldValues>;
+  name?: FieldPath<TFieldValues>;
   /** Standalone mode value. */
   value?: number | string;
   /** Standalone mode change handler; receives a number or `''` when cleared. */
   onChange?: (value: number | '') => void;
 }
 
-const CurrencyInput = ({
+const CurrencyInput = <TFieldValues extends FieldValues = FieldValues>({
   control,
   name,
   value: propValue,
   onChange: propOnChange,
   ...props
-}: CurrencyInputProps) => {
+}: CurrencyInputProps<TFieldValues>) => {
   const formatCurrency = (value: number | string | undefined) => {
     if (!value && value !== 0) return '';
     // Hapus karakter non-digit sebelum format ulang

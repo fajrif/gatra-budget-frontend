@@ -82,8 +82,8 @@ const EditProfileDialog = ({ isOpen, onClose, user, onFinish }: EditProfileDialo
       toast({
         title: 'Success',
         description: passwordChanged
-          ? 'Profile berhasil diperbarui. Silakan login kembali.'
-          : 'Profile berhasil diperbarui.',
+          ? 'Profil berhasil diperbarui. Silakan login kembali.'
+          : 'Profil berhasil diperbarui.',
         variant: 'success',
       });
       reset(initialData);
@@ -101,7 +101,7 @@ const EditProfileDialog = ({ isOpen, onClose, user, onFinish }: EditProfileDialo
       console.error('Failed to update profile:', error);
       toast({
         title: 'Error',
-        description: getErrorMessage(error, 'Gagal memperbarui profile.'),
+        description: getErrorMessage(error, 'Gagal memperbarui profil.'),
         variant: 'destructive',
       });
     },
@@ -120,7 +120,7 @@ const EditProfileDialog = ({ isOpen, onClose, user, onFinish }: EditProfileDialo
     <Dialog open={isOpen} onOpenChange={onClosing}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>Edit Profil</DialogTitle>
+          <DialogTitle>Ubah Profil</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit(onHandleSubmit)}>
           <div className="grid gap-4 py-4">

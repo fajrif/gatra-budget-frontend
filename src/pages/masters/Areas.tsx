@@ -6,7 +6,6 @@ import { appTheme } from '@/lib/agGridTheme';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Plus, MapPin } from 'lucide-react';
-import { useConfirm } from '@/hooks/useConfirm';
 import { useToast } from '@/components/ui/use-toast';
 import AddEditAreaDialog, {
   type AreaFormValues,
@@ -20,7 +19,6 @@ type AreaEditingItem = AreaFormValues & { id: string };
 const Areas = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  const confirm = useConfirm();
   const gridRef = useRef<AgGridReact | null>(null);
   const [showDialog, setShowDialog] = useState(false);
   const [editingItem, setEditingItem] = useState<AreaEditingItem | null>(null);
@@ -35,23 +33,24 @@ const Areas = () => {
     mutationFn: (id: string) => areasAPI.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['areas'] });
-      toast({ title: 'Success', description: 'Area deleted.', variant: 'success' });
+      toast({ title: 'Success', description: 'Kecamatan berhasil dihapus.', variant: 'success' });
     },
     onError: (err) => {
       toast({
         title: 'Error',
-        description: getErrorMessage(err, 'Failed to delete area.'),
+        description: getErrorMessage(err, 'Gagal menghapus kecamatan.'),
         variant: 'destructive',
       });
     },
   });
 
+  // ActionMenuCellRenderer already confirms destructive actions before calling
+  // onDelete, so this just performs the mutation.
   const handleDelete = useCallback(
-    async (row: Area) => {
-      const ok = await confirm({ message: `Delete area "${row.name}"?`, variant: 'danger' });
-      if (ok) deleteMutation.mutate(row.id);
+    (row: Area) => {
+      deleteMutation.mutate(row.id);
     },
-    [confirm, deleteMutation],
+    [deleteMutation],
   );
 
   const columnDefs = useMemo(
@@ -77,8 +76,8 @@ const Areas = () => {
       <div className="max-w-7xl mx-auto space-y-6">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
-            <h1 className="text-2xl font-semibold text-slate-900">Areas</h1>
-            <p className="text-slate-500 mt-1">Manage area / district reference data</p>
+            <h1 className="text-2xl font-semibold text-slate-900">Kecamatan</h1>
+            <p className="text-slate-500 mt-1">Kelola data referensi kecamatan / wilayah</p>
           </div>
         </div>
 
@@ -89,16 +88,16 @@ const Areas = () => {
                 <MapPin className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h3 className="font-semibold text-slate-900 mb-2">About Areas</h3>
+                <h3 className="font-semibold text-slate-900 mb-2">Tentang Kecamatan</h3>
                 <p className="text-sm text-slate-700 mb-3">
-                  Area reference data used across the application.
+                  Data referensi kecamatan yang digunakan di seluruh aplikasi.
                 </p>
                 <div className="space-y-1 text-sm text-slate-600">
                   <p>
-                    • <strong className="font-semibold">Name:</strong> Area / district name
+                    • <strong className="font-semibold">Nama:</strong> Nama kecamatan / wilayah
                   </p>
                   <p>
-                    • <strong className="font-semibold">City ID:</strong> reference to{' '}
+                    • <strong className="font-semibold">ID Kota:</strong> referensi ke{' '}
                     <code>cities</code>
                   </p>
                 </div>
@@ -114,16 +113,16 @@ const Areas = () => {
                 className="bg-blue-900 hover:bg-blue-800"
               >
                 <Plus className="w-4 h-4 mr-2" />
-                Add Area
+                Tambah Kecamatan
               </Button>
             </div>
           </CardHeader>
           <CardContent className="pt-6">
             {isLoading ? (
-              <div className="text-center py-8">Loading...</div>
+              <div className="text-center py-8">Memuat...</div>
             ) : (data?.length ?? 0) === 0 ? (
               <div className="text-center py-8 text-slate-500">
-                No areas yet. Add your first area.
+                Belum ada kecamatan. Tambahkan kecamatan pertama Anda.
               </div>
             ) : (
               <div className="ag-grid-wrapper" style={{ height: 500, width: '100%' }}>
@@ -141,7 +140,7 @@ const Areas = () => {
                   suppressCellFocus
                   tooltipShowDelay={200}
                   tooltipHideDelay={2000}
-                  overlayNoRowsTemplate="<span>No data.</span>"
+                  overlayNoRowsTemplate="<span>Tidak ada data.</span>"
                 />
               </div>
             )}

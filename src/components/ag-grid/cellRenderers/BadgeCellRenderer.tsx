@@ -4,15 +4,15 @@ import type { BadgeClassNames } from '@/types/ag-grid';
 
 /**
  * Renders a pill badge. The `bg`/`text`/`border` classes are passed per-column
- * via `cellRendererParams.badgeClasses`, so a single renderer covers every
- * status colour without hardcoding a palette here.
+ * via `colDef.cellRendererParams.badgeClasses`, so a single renderer covers
+ * every status colour without hardcoding a palette here.
  */
 const BadgeCellRenderer = (params: ICellRendererParams) => {
-  const { value, cellRendererParams } = params;
+  const { value, badgeClasses } = params;
 
   if (!value) return <span className="text-slate-400">-</span>;
 
-  const classes: BadgeClassNames = cellRendererParams?.badgeClasses ?? {};
+  const classes: BadgeClassNames = badgeClasses ?? {};
 
   return (
     <span

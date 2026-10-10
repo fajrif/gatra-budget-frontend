@@ -59,7 +59,7 @@ const DialogContent = React.forwardRef<HTMLDivElement, DialogContentProps>(
           onClick={() => context?.onOpenChange?.(false)}
         >
           <X className="h-4 w-4" />
-          <span className="sr-only">Close</span>
+          <span className="sr-only">Tutup</span>
         </button>
       </div>
     );

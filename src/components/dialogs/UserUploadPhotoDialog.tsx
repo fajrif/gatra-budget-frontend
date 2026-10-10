@@ -81,7 +81,7 @@ const UserUploadPhotoDialog = ({
     if (!userId) {
       toast({
         title: 'Error',
-        description: 'Gagal mengupload photo.',
+        description: 'Gagal mengunggah foto.',
         variant: 'destructive',
       });
       return;
@@ -102,7 +102,7 @@ const UserUploadPhotoDialog = ({
 
       toast({
         title: 'Success',
-        description: 'Photo berhasil diupload.',
+        description: 'Foto berhasil diunggah.',
         variant: 'success',
       });
 
@@ -112,7 +112,7 @@ const UserUploadPhotoDialog = ({
     } catch (error) {
       toast({
         title: 'Error',
-        description: getErrorMessage(error, 'Gagal mengupload photo.'),
+        description: getErrorMessage(error, 'Gagal mengunggah foto.'),
         variant: 'destructive',
       });
     } finally {
@@ -127,7 +127,7 @@ const UserUploadPhotoDialog = ({
     onSuccess: () => {
       toast({
         title: 'Success',
-        description: 'Photo berhasil dihapus.',
+        description: 'Foto berhasil dihapus.',
         variant: 'success',
       });
       queryClient.invalidateQueries({ queryKey: ['userProfile'] });
@@ -137,7 +137,7 @@ const UserUploadPhotoDialog = ({
     onError: (error) => {
       toast({
         title: 'Error',
-        description: getErrorMessage(error, 'Gagal menghapus photo.'),
+        description: getErrorMessage(error, 'Gagal menghapus foto.'),
         variant: 'destructive',
       });
     },
@@ -145,7 +145,7 @@ const UserUploadPhotoDialog = ({
 
   const handleDelete = async () => {
     if (!userId) return;
-    if (await confirm({ message: 'Apakah Anda yakin ingin menghapus photo?' })) {
+    if (await confirm({ message: 'Apakah Anda yakin ingin menghapus foto?' })) {
       deleteMutation.mutate(userId);
     }
   };
@@ -162,7 +162,7 @@ const UserUploadPhotoDialog = ({
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Upload Photo Profil</DialogTitle>
+          <DialogTitle>Unggah Foto Profil</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4 py-4">
@@ -171,7 +171,7 @@ const UserUploadPhotoDialog = ({
               {/* File Input */}
               <div className="border-2 border-dashed border-slate-300 rounded-lg p-8 text-center hover:border-blue-500 transition-colors">
                 <Upload className="w-12 h-12 mx-auto text-slate-400 mb-4" />
-                <p className="text-sm text-slate-600 mb-2">Pilih foto untuk diupload</p>
+                <p className="text-sm text-slate-600 mb-2">Pilih foto untuk diunggah</p>
                 <p className="text-xs text-slate-500 mb-4">JPEG atau PNG, maksimal 5MB</p>
                 <input
                   ref={fileInputRef}
@@ -245,7 +245,7 @@ const UserUploadPhotoDialog = ({
               disabled={deleteMutation.isPending}
             >
               <Trash2 className="w-4 h-4 mr-2" />
-              {deleteMutation.isPending ? 'Menghapus...' : 'Hapus Photo Existing'}
+              {deleteMutation.isPending ? 'Menghapus...' : 'Hapus Foto yang Ada'}
             </Button>
           )}
           <Button type="button" variant="outline" onClick={handleClose}>
@@ -259,7 +259,7 @@ const UserUploadPhotoDialog = ({
               className="bg-green-600 hover:bg-green-700"
             >
               <Upload className="w-4 h-4 mr-2" />
-              {isUploading ? 'Mengupload...' : 'Upload Photo'}
+              {isUploading ? 'Mengunggah...' : 'Unggah Foto'}
             </Button>
           )}
         </DialogFooter>

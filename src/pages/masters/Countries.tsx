@@ -6,7 +6,6 @@ import { appTheme } from '@/lib/agGridTheme';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Plus, Globe } from 'lucide-react';
-import { useConfirm } from '@/hooks/useConfirm';
 import { useToast } from '@/components/ui/use-toast';
 import AddEditCountryDialog, {
   type CountryFormValues,
@@ -20,7 +19,6 @@ type CountryEditingItem = CountryFormValues & { id: string };
 const Countries = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  const confirm = useConfirm();
   const gridRef = useRef<AgGridReact | null>(null);
   const [showDialog, setShowDialog] = useState(false);
   const [editingItem, setEditingItem] = useState<CountryEditingItem | null>(null);
@@ -35,23 +33,24 @@ const Countries = () => {
     mutationFn: (id: string) => countriesAPI.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['countries'] });
-      toast({ title: 'Success', description: 'Country deleted.', variant: 'success' });
+      toast({ title: 'Success', description: 'Negara berhasil dihapus.', variant: 'success' });
     },
     onError: (err) => {
       toast({
         title: 'Error',
-        description: getErrorMessage(err, 'Failed to delete country.'),
+        description: getErrorMessage(err, 'Gagal menghapus negara.'),
         variant: 'destructive',
       });
     },
   });
 
+  // ActionMenuCellRenderer already confirms destructive actions before calling
+  // onDelete, so this just performs the mutation.
   const handleDelete = useCallback(
-    async (row: Country) => {
-      const ok = await confirm({ message: `Delete country "${row.name}"?`, variant: 'danger' });
-      if (ok) deleteMutation.mutate(row.id);
+    (row: Country) => {
+      deleteMutation.mutate(row.id);
     },
-    [confirm, deleteMutation],
+    [deleteMutation],
   );
 
   const columnDefs = useMemo(
@@ -77,8 +76,8 @@ const Countries = () => {
       <div className="max-w-7xl mx-auto space-y-6">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
-            <h1 className="text-2xl font-semibold text-slate-900">Countries</h1>
-            <p className="text-slate-500 mt-1">Manage country reference data</p>
+            <h1 className="text-2xl font-semibold text-slate-900">Negara</h1>
+            <p className="text-slate-500 mt-1">Kelola data referensi negara</p>
           </div>
         </div>
         <Card className="border-none shadow-lg bg-gradient-to-br from-blue-50 to-indigo-50">
@@ -88,16 +87,16 @@ const Countries = () => {
                 <Globe className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h3 className="font-semibold text-slate-900 mb-2">About Countries</h3>
+                <h3 className="font-semibold text-slate-900 mb-2">Tentang Negara</h3>
                 <p className="text-sm text-slate-700 mb-3">
-                  Country reference data used across the application.
+                  Data referensi negara yang digunakan di seluruh aplikasi.
                 </p>
                 <div className="space-y-1 text-sm text-slate-600">
                   <p>
-                    • <strong className="font-semibold">Code:</strong> ISO 3166-1 alpha-2
+                    • <strong className="font-semibold">Kode:</strong> ISO 3166-1 alpha-2
                   </p>
                   <p>
-                    • <strong className="font-semibold">Name:</strong> Country name
+                    • <strong className="font-semibold">Nama:</strong> Nama negara
                   </p>
                 </div>
               </div>
@@ -112,16 +111,16 @@ const Countries = () => {
                 className="bg-blue-900 hover:bg-blue-800"
               >
                 <Plus className="w-4 h-4 mr-2" />
-                Add Country
+                Tambah Negara
               </Button>
             </div>
           </CardHeader>
           <CardContent className="pt-6">
             {isLoading ? (
-              <div className="text-center py-8">Loading...</div>
+              <div className="text-center py-8">Memuat...</div>
             ) : (data?.length ?? 0) === 0 ? (
               <div className="text-center py-8 text-slate-500">
-                No countries yet. Add your first country.
+                Belum ada negara. Tambahkan negara pertama Anda.
               </div>
             ) : (
               <div className="ag-grid-wrapper" style={{ height: 500, width: '100%' }}>
@@ -139,7 +138,7 @@ const Countries = () => {
                   suppressCellFocus
                   tooltipShowDelay={200}
                   tooltipHideDelay={2000}
-                  overlayNoRowsTemplate="<span>No data.</span>"
+                  overlayNoRowsTemplate="<span>Tidak ada data.</span>"
                 />
               </div>
             )}

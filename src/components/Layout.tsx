@@ -18,6 +18,11 @@ import {
   FileBarChart,
   TrendingUp,
   Home,
+  Wallet,
+  FileText,
+  Receipt,
+  Briefcase,
+  CreditCard,
   type LucideIcon,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -55,34 +60,43 @@ const navigationItems: NavItem[] = [
     icon: UserCog,
     roles: ['admin'],
   },
-  {
-    title: 'My Addresses',
-    url: '/my-addresses',
-    icon: Home,
-    roles: ['admin', 'user'],
-  },
 ];
 
 const navigationMastersGroup: NavGroup = {
-  title: 'Address Reference',
+  title: 'Referensi Alamat',
   icon: Database,
   key: 'addressReference',
   roles: ['admin'],
   children: [
-    { title: 'Countries', url: '/countries', icon: Globe, roles: ['admin'] },
-    { title: 'Provinces', url: '/provinces', icon: Map, roles: ['admin'] },
-    { title: 'Cities', url: '/cities', icon: Building2, roles: ['admin'] },
-    { title: 'Areas', url: '/areas', icon: MapPin, roles: ['admin'] },
+    { title: 'Negara', url: '/countries', icon: Globe, roles: ['admin'] },
+    { title: 'Provinsi', url: '/provinces', icon: Map, roles: ['admin'] },
+    { title: 'Kota', url: '/cities', icon: Building2, roles: ['admin'] },
+    { title: 'Kecamatan', url: '/areas', icon: MapPin, roles: ['admin'] },
+  ],
+};
+
+const navigationBudgetGroup: NavGroup = {
+  title: 'Manajemen Anggaran',
+  icon: Wallet,
+  key: 'budgetManagement',
+  roles: ['admin', 'user'],
+  children: [
+    { title: 'Proyek', url: '/projects', icon: Briefcase, roles: ['admin', 'user'] },
+    { title: 'Transaksi', url: '/transactions', icon: CreditCard, roles: ['admin', 'user'] },
+    { title: 'Klien', url: '/clients', icon: Building2, roles: ['admin'] },
+    { title: 'Jenis Kontrak', url: '/contract-types', icon: FileText, roles: ['admin'] },
+    { title: 'Jenis Biaya', url: '/cost-types', icon: Receipt, roles: ['admin'] },
   ],
 };
 
 const navigationReportsGroup: NavGroup = {
-  title: 'Reports',
+  title: 'Laporan',
   icon: FileBarChart,
   key: 'reports',
   roles: ['admin', 'user'],
   children: [
-    { title: 'Report Sample', url: '/reports/sample', icon: TrendingUp, roles: ['admin', 'user'] },
+    { title: 'Contoh Laporan', url: '/reports/sample', icon: TrendingUp, roles: ['admin', 'user'] },
+    { title: 'Management Fee', url: '/reports/management-fee', icon: Wallet, roles: ['admin'] },
   ],
 };
 
@@ -101,7 +115,11 @@ export default function Layout({ children }: LayoutProps) {
     }
     return false;
   });
-  const { isMenuOpen, toggleMenu } = useSidebarMenuState({ addressReference: true, reports: true });
+  const { isMenuOpen, toggleMenu } = useSidebarMenuState({
+    addressReference: true,
+    reports: true,
+    budgetManagement: true,
+  });
 
   React.useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -119,6 +137,13 @@ export default function Layout({ children }: LayoutProps) {
 
   const canSeeMastersGroup =
     navigationMastersGroup.roles.includes(user?.role as UserRole) && filteredMasterChildren.length > 0;
+
+  const filteredBudgetChildren = navigationBudgetGroup.children.filter(
+    (item) => !item.roles || item.roles.includes(user?.role as UserRole),
+  );
+
+  const canSeeBudgetGroup =
+    navigationBudgetGroup.roles.includes(user?.role as UserRole) && filteredBudgetChildren.length > 0;
 
   const filteredReportChildren = navigationReportsGroup.children.filter(
     (item) => !item.roles || item.roles.includes(user?.role as UserRole),
@@ -146,7 +171,7 @@ export default function Layout({ children }: LayoutProps) {
               className={`flex items-center ${sidebarCollapsed ? 'lg:justify-center' : 'justify-between'}`}
             >
               {!sidebarCollapsed && (
-                <img src={logoApp} className="w-[50%] mx-auto" alt="Gatra Budget App" />
+                <img src={logoApp} className="w-[50%] mx-auto" alt="Aplikasi Gatra Budget" />
               )}
               <button
                 onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
@@ -291,6 +316,107 @@ export default function Layout({ children }: LayoutProps) {
               </Collapsible>
             )}
 
+            {/* Collapsible Budget Management Group */}
+            {canSeeBudgetGroup && (
+              <Collapsible
+                open={isMenuOpen('budgetManagement')}
+                onOpenChange={() => toggleMenu('budgetManagement')}
+              >
+                <CollapsibleTrigger asChild>
+                  {sidebarCollapsed ? (
+                    <SidebarDropdown
+                      trigger={
+                        <button
+                          className={`
+                            flex items-center lg:justify-center lg:px-0 py-2.5 text-sm rounded-lg
+                            transition-all duration-200 hover:bg-slate-100
+                            ${
+                              filteredBudgetChildren.some(
+                                (item) => location.pathname === item.url,
+                              )
+                                ? 'text-blue-900 font-medium'
+                                : 'text-slate-700'
+                            }
+                          `}
+                        >
+                          <Wallet className="w-5 h-5" />
+                        </button>
+                      }
+                      title={navigationBudgetGroup.title}
+                    >
+                      {filteredBudgetChildren.map((item) => {
+                        const isActive = location.pathname === item.url;
+                        return (
+                          <Link
+                            key={item.title}
+                            to={item.url}
+                            onClick={() => setSidebarOpen(false)}
+                            className={`
+                              flex items-center gap-3 px-3 py-2 text-sm transition-all duration-200
+                              ${
+                                isActive
+                                  ? 'bg-blue-50 text-blue-900 font-medium'
+                                  : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                              }
+                            `}
+                          >
+                            <item.icon className="w-4 h-4" />
+                            <span>{item.title}</span>
+                          </Link>
+                        );
+                      })}
+                    </SidebarDropdown>
+                  ) : (
+                    <button
+                      className={`
+                        flex w-full items-center gap-3 px-3 py-2.5 text-sm rounded-lg
+                        transition-all duration-200 hover:bg-slate-100
+                        ${
+                          filteredBudgetChildren.some((item) => location.pathname === item.url)
+                            ? 'text-blue-900 font-medium'
+                            : 'text-slate-700'
+                        }
+                      `}
+                    >
+                      <Wallet className="w-5 h-5" />
+                      <span className="flex-1 text-left">{navigationBudgetGroup.title}</span>
+                      <ChevronDown
+                        className={`w-4 h-4 transition-transform duration-200 ${isMenuOpen('budgetManagement') ? 'rotate-180' : ''}`}
+                      />
+                    </button>
+                  )}
+                </CollapsibleTrigger>
+
+                <CollapsibleContent>
+                  <div className="ml-4 pl-4 border-l border-slate-200 space-y-1 mt-1">
+                    {filteredBudgetChildren.map((item) => {
+                      const isActive = location.pathname === item.url;
+                      return (
+                        <Link
+                          key={item.title}
+                          to={item.url}
+                          onClick={() => setSidebarOpen(false)}
+                          className={`
+                            flex items-center gap-3 px-3 py-2 text-sm rounded-lg transition-all duration-200
+                            ${
+                              isActive
+                                ? 'bg-blue-50 text-blue-900 font-medium'
+                                : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                            }
+                          `}
+                        >
+                          <item.icon className="w-4 h-4" />
+                          <span>{item.title}</span>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </CollapsibleContent>
+              </Collapsible>
+            )}
+
+            <div className="h-px bg-slate-200 my-2"></div>
+
             {/* Other Navigation Items (excluding Dashboard) */}
             <div className="space-y-1">
               {filteredNavItems
@@ -322,9 +448,9 @@ export default function Layout({ children }: LayoutProps) {
                   ) : (
                     linkContent
                   );
-                })}
+                })
+              }
             </div>
-            <div className="h-px bg-slate-200 my-2"></div>
 
             {/* Collapsible Masters Group */}
             {canSeeMastersGroup && (
@@ -432,7 +558,7 @@ export default function Layout({ children }: LayoutProps) {
               className={`space-y-3 ${sidebarCollapsed ? 'lg:flex lg:flex-col lg:items-center lg:gap-2' : ''}`}
             >
               <Tooltip
-                content={`${user?.full_name || 'User'} (${user?.role === 'admin' ? 'Administrator' : 'User'})`}
+                content={`${user?.full_name || 'Pengguna'} (${user?.role === 'admin' ? 'Administrator' : 'Pengguna'})`}
               >
                 <Button
                   variant={sidebarCollapsed ? 'ghost' : 'outline'}
@@ -445,7 +571,7 @@ export default function Layout({ children }: LayoutProps) {
                   {user?.photo_url ? (
                     <img
                       src={getAssetUrl(user.photo_url)}
-                      alt="Profile Photo"
+                      alt="Foto Profil"
                       className={`w-10 h-10 rounded-full object-cover ${sidebarCollapsed ? '' : 'border-2 border-slate-200'}`}
                       onError={(e) => {
                         const target = e.target as HTMLImageElement;
@@ -460,17 +586,17 @@ export default function Layout({ children }: LayoutProps) {
                     style={{ display: user?.photo_url ? 'none' : 'flex' }}
                   >
                     <span className="text-white font-semibold text-sm">
-                      {user?.full_name?.charAt(0) || 'U'}
+                      {user?.full_name?.charAt(0) || 'P'}
                     </span>
                   </div>
                   <div
                     className={`flex-1 text-left min-w-0 ${sidebarCollapsed ? 'lg:hidden' : ''}`}
                   >
                     <p className="font-medium text-slate-900 text-sm truncate">
-                      {user?.full_name || 'User'}
+                      {user?.full_name || 'Pengguna'}
                     </p>
                     <p className="text-xs text-slate-500 truncate">
-                      {user?.role === 'admin' ? 'Administrator' : 'User'}
+                      {user?.role === 'admin' ? 'Administrator' : 'Pengguna'}
                     </p>
                   </div>
                 </Button>

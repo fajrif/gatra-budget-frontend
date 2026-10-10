@@ -36,13 +36,13 @@ const Select = ({
   options = [],
   value,
   onChange,
-  placeholder = 'Select...',
+  placeholder = 'Pilih...',
   disabled = false,
   className = '',
   error = false,
   searchable = true,
   clearable = true,
-  emptyMessage = 'No options available',
+  emptyMessage = 'Tidak ada opsi tersedia',
   ...props
 }: SelectProps) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -170,7 +170,7 @@ const Select = ({
                 ref={searchInputRef}
                 type="text"
                 className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
-                placeholder="Search..."
+                placeholder="Cari..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -203,7 +203,7 @@ const Select = ({
               ))
             ) : (
               <div className="py-6 text-center text-sm text-muted-foreground">
-                {searchTerm ? 'No results found.' : emptyMessage}
+                {searchTerm ? 'Hasil tidak ditemukan.' : emptyMessage}
               </div>
             )}
           </div>

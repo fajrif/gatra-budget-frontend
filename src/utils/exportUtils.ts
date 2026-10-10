@@ -29,7 +29,7 @@ export interface ExportPdfOptions {
 
 export const exportToPDF = async (elementRef: HTMLElement | null, filename: string): Promise<void> => {
   if (!elementRef) {
-    throw new Error('Element reference is required for PDF export');
+    throw new Error('Referensi elemen diperlukan untuk ekspor PDF');
   }
 
   const html2pdf = (await import('html2pdf.js')).default;
@@ -59,7 +59,7 @@ export const exportToExcel = async <T extends Record<string, unknown> | object>(
   sheetName = 'Data',
 ): Promise<void> => {
   if (!data || data.length === 0) {
-    throw new Error('No data to export');
+    throw new Error('Tidak ada data untuk diekspor');
   }
 
   const workbook = new ExcelJS.Workbook();

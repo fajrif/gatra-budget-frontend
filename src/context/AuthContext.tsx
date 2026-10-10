@@ -68,7 +68,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       return { success: true };
     } catch (error) {
-      return { success: false, error: errorMessage(error, 'Login failed') };
+      return { success: false, error: errorMessage(error, 'Login gagal') };
     }
   };
 
@@ -85,7 +85,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUser(response.data);
       return { success: true };
     } catch (error) {
-      return { success: false, error: errorMessage(error, 'Update failed') };
+      return { success: false, error: errorMessage(error, 'Pembaruan gagal') };
     }
   };
 

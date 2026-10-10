@@ -11,15 +11,15 @@ export const createAreasColumnDefs = ({
 }: GridActionHandlers<Area>): ColDef<Area>[] => [
   {
     field: 'name',
-    headerName: 'Area Name',
+    headerName: 'Nama Kecamatan',
   },
   {
     field: 'city.name',
-    headerName: 'City',
+    headerName: 'Kota',
     width: 180,
   },
   {
-    headerName: 'Actions',
+    headerName: 'Aksi',
     width: 60,
     resizable: false,
     sortable: false,

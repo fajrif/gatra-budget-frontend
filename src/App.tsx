@@ -1,4 +1,3 @@
-import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'react-hot-toast';
@@ -16,12 +15,23 @@ import Provinces from '@/pages/masters/Provinces';
 import Cities from '@/pages/masters/Cities';
 import Areas from '@/pages/masters/Areas';
 
+// Budget master data pages (admin only)
+import Clients from '@/pages/masters/Clients';
+import ContractTypes from '@/pages/masters/ContractTypes';
+import CostTypes from '@/pages/masters/CostTypes';
+
+// Projects (open to any authenticated user)
+import Projects from '@/pages/operationals/Projects';
+import ProjectDetail from '@/pages/operationals/ProjectDetail';
+import Transactions from '@/pages/operationals/Transactions';
+
 // Operational pages
 import Users from '@/pages/operationals/Users';
 import UserAddresses from '@/pages/operationals/UserAddresses';
 
 // Reports
 import ReportSample from '@/pages/reports/ReportSample';
+import ManagementFee from '@/pages/reports/ManagementFee';
 
 // Layout
 import Layout from '@/components/Layout';
@@ -124,6 +134,74 @@ function App() {
                 }
               />
 
+              {/* Projects — open to any authenticated user */}
+              <Route
+                path="/projects"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <Projects />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/projects/:projectId"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <ProjectDetail />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/transactions"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <Transactions />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+
+              {/* Budget master data — admin only */}
+              <Route
+                path="/clients"
+                element={
+                  <ProtectedRoute adminOnly>
+                    <Layout>
+                      <Clients />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/contract-types"
+                element={
+                  <ProtectedRoute adminOnly>
+                    <Layout>
+                      <ContractTypes />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/cost-types"
+                element={
+                  <ProtectedRoute adminOnly>
+                    <Layout>
+                      <CostTypes />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+
               {/* Users management — admin only */}
               <Route
                 path="/users"
@@ -155,6 +233,18 @@ function App() {
                   <ProtectedRoute>
                     <Layout>
                       <ReportSample />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+
+              {/* Management fee report — admin only (remaining budget and margin) */}
+              <Route
+                path="/reports/management-fee"
+                element={
+                  <ProtectedRoute adminOnly>
+                    <Layout>
+                      <ManagementFee />
                     </Layout>
                   </ProtectedRoute>
                 }

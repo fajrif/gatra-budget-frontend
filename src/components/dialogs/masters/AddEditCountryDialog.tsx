@@ -52,7 +52,7 @@ const AddEditCountryDialog = ({
     onSuccess: () => {
       toast({
         title: 'Success',
-        description: `Country ${editingItem ? 'updated' : 'created'} successfully.`,
+        description: `Negara ${editingItem ? 'berhasil diperbarui' : 'berhasil ditambahkan'}.`,
         variant: 'success',
       });
       onFinish(true);
@@ -60,7 +60,7 @@ const AddEditCountryDialog = ({
     onError: (err) => {
       toast({
         title: 'Error',
-        description: getErrorMessage(err, 'Failed to save country.'),
+        description: getErrorMessage(err, 'Gagal menyimpan negara.'),
         variant: 'destructive',
       });
     },
@@ -70,19 +70,19 @@ const AddEditCountryDialog = ({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>{editingItem ? 'Edit Country' : 'Add Country'}</DialogTitle>
+          <DialogTitle>{editingItem ? 'Ubah Negara' : 'Tambah Negara'}</DialogTitle>
         </DialogHeader>
         <form
           onSubmit={handleSubmit((data) => saveMutation.mutate(data))}
           className="space-y-4"
         >
           <div>
-            <Label>Country Name</Label>
+            <Label>Nama Negara</Label>
             <Input {...register('name')} placeholder="Indonesia" className="mt-1" />
             {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name.message}</p>}
           </div>
           <div>
-            <Label>Code (ISO 3166-1 alpha-2)</Label>
+            <Label>Kode (ISO 3166-1 alpha-2)</Label>
             <Input
               {...register('code')}
               placeholder="ID"
@@ -93,7 +93,7 @@ const AddEditCountryDialog = ({
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onClose}>
-              Cancel
+              Batal
             </Button>
             <Button
               type="submit"
@@ -105,7 +105,7 @@ const AddEditCountryDialog = ({
               ) : (
                 <>
                   <Save className="w-4 h-4 mr-2" />
-                  Save
+                  Simpan
                 </>
               )}
             </Button>

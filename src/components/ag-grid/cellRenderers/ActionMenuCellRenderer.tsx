@@ -6,14 +6,14 @@ import { useConfirm } from '@/hooks/useConfirm';
 
 /**
  * Kebab menu rendered inside the cell. The action handlers arrive through
- * `cellRendererParams` (declared in `src/types/ag-grid.d.ts`) rather than
- * closure scope, which is why AG Grid recreates this component per column.
+ * `colDef.cellRendererParams` (declared in `src/types/ag-grid.d.ts`), which AG
+ * Grid merges directly onto this component's own params rather than closure
+ * scope, which is why AG Grid recreates this component per column.
  */
 const ActionMenuCellRenderer = <TData extends { id: string }>(
   params: ICellRendererParams<TData>,
 ) => {
-  const { data, cellRendererParams } = params;
-  const { onEdit, onDelete, onView } = cellRendererParams ?? {};
+  const { data, onEdit, onDelete, onView } = params;
 
   const [isOpen, setIsOpen] = useState(false);
   const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
@@ -112,7 +112,7 @@ const ActionMenuCellRenderer = <TData extends { id: string }>(
               type="button"
             >
               <Pencil className="w-4 h-4" />
-              Edit
+              Ubah
             </button>
             <button
               onClick={handleDelete}

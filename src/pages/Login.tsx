@@ -29,7 +29,7 @@ const Login = () => {
     } else {
       toast({
         title: 'Error',
-        description: result.error || 'Invalid credentials.',
+        description: result.error || 'Kredensial tidak valid.',
         variant: 'destructive',
       });
     }
@@ -41,9 +41,9 @@ const Login = () => {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
       <Card className="w-full max-w-md shadow-2xl">
         <CardHeader className="space-y-4 text-center">
-          <img src={logoApp} className="mx-auto h-[3.5rem]" alt="Gatra Budget App" />
+          <img src={logoApp} className="mx-auto h-[3.5rem]" alt="Aplikasi Gatra Budget" />
           <div>
-            <CardDescription className="text-base mt-2">Budget management system</CardDescription>
+            <CardDescription className="text-base mt-2">Sistem manajemen anggaran</CardDescription>
           </div>
         </CardHeader>
         <CardContent>
@@ -64,7 +64,7 @@ const Login = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">Kata Sandi</Label>
               <Input
                 id="password"
                 type="password"
@@ -83,12 +83,12 @@ const Login = () => {
               className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700"
               disabled={loading}
             >
-              {loading ? 'Loading...' : 'Login'}
+              {loading ? 'Memuat...' : 'Masuk'}
             </Button>
           </form>
 
           <div className="mt-6 text-center text-sm text-slate-600">
-            <p>Contact Administrator:</p>
+            <p>Hubungi Administrator:</p>
             <p className="font-mono text-xs mt-1">admin@gatrahitawasana.com</p>
           </div>
         </CardContent>

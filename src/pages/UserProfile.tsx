@@ -92,7 +92,7 @@ const UserProfile = () => {
                   size="sm"
                 >
                   <Pencil className="w-4 h-4 mr-2" />
-                  Edit Profil
+Ubah Profil
                 </Button>
               </div>
             </CardHeader>
@@ -107,7 +107,7 @@ const UserProfile = () => {
                     {profileData?.photo_url ? (
                       <img
                         src={getAssetUrl(profileData.photo_url)}
-                        alt="Profile Photo"
+                        alt="Foto Profil"
                         className="w-20 h-20 rounded-full object-cover border-2 border-slate-200"
                         onError={(e) => {
                           const img = e.currentTarget;
@@ -123,7 +123,7 @@ const UserProfile = () => {
                       style={{ display: profileData?.photo_url ? 'none' : 'flex' }}
                     >
                       <span className="text-white font-bold text-2xl">
-                        {profileData?.full_name?.charAt(0) || 'U'}
+                        {profileData?.full_name?.charAt(0) || 'P'}
                       </span>
                     </div>
                     {/* Hover Overlay */}
@@ -133,7 +133,7 @@ const UserProfile = () => {
                   </div>
                   <div>
                     <h3 className="text-xl font-semibold text-slate-900">
-                      {profileData?.full_name || 'User'}
+                      {profileData?.full_name || 'Pengguna'}
                     </h3>
                     <p className="text-slate-500 text-sm mt-1">
                       {profileData?.role === 'admin'

@@ -22,6 +22,8 @@ export interface ListParams {
   province_id?: string;
   city_id?: string;
   area_id?: string;
+  /** Project list filter. */
+  status_kontrak?: string;
 }
 
 /** Mirrors `helpers.PaginationMeta` in the Go backend. */

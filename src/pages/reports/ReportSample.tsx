@@ -39,7 +39,7 @@ const ReportSample = () => {
       await html2pdf()
         .set({
           margin: 10,
-          filename: `Report-Sample.pdf`,
+          filename: `Contoh-Laporan.pdf`,
           image: { type: 'jpeg', quality: 0.98 },
           html2canvas: { scale: 2, useCORS: true },
           jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
@@ -59,31 +59,31 @@ const ReportSample = () => {
     <div className="p-4 md:p-8 bg-gradient-to-br from-slate-50 to-slate-100 min-h-screen">
       <div className="max-w-5xl mx-auto space-y-6">
         <div>
-          <h1 className="text-2xl font-semibold text-slate-900">Report Sample</h1>
+          <h1 className="text-2xl font-semibold text-slate-900">Contoh Laporan</h1>
           <p className="text-slate-500 mt-1">
-            Example report page with filter, table, and PDF export
+            Contoh halaman laporan dengan filter, tabel, dan ekspor PDF
           </p>
         </div>
 
         {/* Filter Card */}
         <Card className="border-none shadow-lg">
           <CardHeader>
-            <CardTitle className="text-base">Filters</CardTitle>
+            <CardTitle className="text-base">Filter</CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col md:flex-row items-end gap-4">
             <div className="flex-1 space-y-1.5">
-              <Label>Search by Name</Label>
+              <Label>Cari berdasarkan Nama</Label>
               <Input
                 value={searchTerm}
                 onChange={(e: ChangeEvent<HTMLInputElement>) =>
                   handleFilterChange(e.target.value)
                 }
-                placeholder="e.g. Indonesia"
+                placeholder="mis. Indonesia"
               />
             </div>
             <Button onClick={handleGenerate} className="bg-blue-900 hover:bg-blue-800 gap-2">
               <Search className="w-4 h-4" />
-              Generate Report
+              Buat Laporan
             </Button>
           </CardContent>
         </Card>
@@ -92,7 +92,7 @@ const ReportSample = () => {
         {hasGenerated && (
           <Card className="border-none shadow-lg">
             <CardHeader className="flex flex-row justify-between items-center">
-              <CardTitle className="text-base">Results</CardTitle>
+              <CardTitle className="text-base">Hasil</CardTitle>
               <Button
                 variant="outline"
                 size="sm"
@@ -101,14 +101,14 @@ const ReportSample = () => {
                 className="gap-2"
               >
                 <FileDown className="w-4 h-4" />
-                {isExporting ? 'Exporting...' : 'Export PDF'}
+                {isExporting ? 'Mengekspor...' : 'Ekspor PDF'}
               </Button>
             </CardHeader>
             <CardContent>
               {isLoading ? (
-                <div className="py-8 text-center text-slate-500 animate-pulse">Loading...</div>
+                <div className="py-8 text-center text-slate-500 animate-pulse">Memuat...</div>
               ) : rows.length === 0 ? (
-                <div className="py-8 text-center text-slate-400">No data found.</div>
+                <div className="py-8 text-center text-slate-400">Data tidak ditemukan.</div>
               ) : (
                 <div className="overflow-x-auto">
                   <div
@@ -117,7 +117,7 @@ const ReportSample = () => {
                     style={{ fontFamily: 'Arial, sans-serif' }}
                   >
                     <div className="mb-6 text-center">
-                      <h2 className="text-base font-bold uppercase">COUNTRY REFERENCE REPORT</h2>
+                      <h2 className="text-base font-bold uppercase">LAPORAN REFERENSI NEGARA</h2>
                       {appliedSearch && (
                         <p className="text-sm text-gray-500">Filter: "{appliedSearch}"</p>
                       )}
@@ -145,7 +145,7 @@ const ReportSample = () => {
                               textAlign: 'left',
                             }}
                           >
-                            Code
+                            Kode
                           </th>
                           <th
                             style={{
@@ -156,7 +156,7 @@ const ReportSample = () => {
                               textAlign: 'left',
                             }}
                           >
-                            Country Name
+                            Nama Negara
                           </th>
                         </tr>
                       </thead>
@@ -186,7 +186,7 @@ const ReportSample = () => {
                         ))}
                       </tbody>
                     </table>
-                    <p className="text-xs text-gray-400 mt-4">Total: {rows.length} records</p>
+                    <p className="text-xs text-gray-400 mt-4">Total: {rows.length} data</p>
                   </div>
                 </div>
               )}
