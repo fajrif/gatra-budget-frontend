@@ -67,7 +67,6 @@ const navigationReportsGroup: NavGroup = {
   key: 'reports',
   roles: ['admin', 'user'],
   children: [
-    { title: 'Contoh Laporan', url: '/reports/sample', icon: TrendingUp, roles: ['admin', 'user'] },
     { title: 'Management Fee', url: '/reports/management-fee', icon: Wallet, roles: ['admin'] },
   ],
 };
