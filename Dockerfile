@@ -1,25 +1,22 @@
 # Build stage
-FROM node:22-alpine AS builder
-WORKDIR /app
+FROM node:22-alpine AS build
+WORKDIR /src
 
-# Copy package files
-COPY package*.json ./
+COPY package.json package-lock.json ./
 RUN npm ci
 
-# Copy source code
 COPY . .
 
-# Build argument for API URL
-ARG VITE_API_BASE_URL
+ARG VITE_API_BASE_URL=/api
 ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
 
-# Build the app
 RUN npm run build
 
-# Production stage
-FROM nginx:alpine
-COPY --from=builder /app/dist /usr/share/nginx/html
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# Publish stage - copy built files to shared volume
+FROM node:22-alpine AS runtime
+RUN apk add --no-cache rsync
 
-EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
+WORKDIR /app
+COPY --from=build /src/dist ./dist
+
+CMD ["sh", "-c", "rsync -a --delete dist/ /srv/www/ && echo 'Frontend published to /srv/www'"]
