@@ -12,8 +12,8 @@ export interface ProjectFinancialSummaryProps {
 
 /**
  * Admin-only remaining budget and profit margin for one project. The parent
- * must render this only for admins; the query is also disabled here so no
- * request is sent for anyone else, and the server returns 403 regardless.
+ * must render this only for admins (no request is made otherwise), and the
+ * server returns 403 to anyone else regardless.
  */
 const ProjectFinancialSummary = ({ projectId }: ProjectFinancialSummaryProps) => {
   const { data: summary, isLoading, isError } = useQuery({
@@ -34,12 +34,14 @@ const ProjectFinancialSummary = ({ projectId }: ProjectFinancialSummaryProps) =>
     { label: 'Sisa Anggaran', value: formatRupiah(summary.remaining_budget) },
     { label: 'Total Realisasi', value: formatRupiah(summary.total_realisasi) },
     {
+      label: 'Total Invoice',
+      value: formatRupiah(summary.total_invoice),
+      hint: `${formatRupiah(summary.total_clearing)} sudah dibayar`,
+    },
+    {
       label: 'Profit Margin',
       value: formatRupiah(summary.profit_margin),
-      hint:
-        summary.tarif_management_fee_persen != null
-          ? `tarif fee ${summary.tarif_management_fee_persen}%`
-          : 'Tarif fee belum ditentukan',
+      hint: 'total manajemen fee invoice',
     },
   ];
 
@@ -53,7 +55,7 @@ const ProjectFinancialSummary = ({ projectId }: ProjectFinancialSummaryProps) =>
           </Badge>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {tiles.map((tile) => (
             <div key={tile.label} className="rounded-lg bg-slate-50 p-4">
               <p className="text-xs text-slate-500">{tile.label}</p>

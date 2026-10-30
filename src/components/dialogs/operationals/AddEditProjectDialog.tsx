@@ -1,13 +1,13 @@
 import React, { useEffect } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { projectsAPI, clientsAPI, contractTypesAPI } from '@/api/endpoints';
+import { isAxiosError } from 'axios';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { CurrencyInput } from '@/components/ui/CurrencyInput';
-import { PercentageInput } from '@/components/ui/PercentageInput';
 import Select from '@/components/ui/select';
 import {
   Dialog,
@@ -34,12 +34,6 @@ export interface AddEditProjectDialogProps {
   onFinish: (shouldRefresh: boolean) => void;
 }
 
-const statusOptions = [
-  { value: 'Active', label: 'Aktif' },
-  { value: 'Pending', label: 'Pending' },
-  { value: 'Non Aktif', label: 'Non Aktif' },
-];
-
 /** Go's `omitempty` nullable fields arrive as `null`; the form wants '' or undefined. */
 const toFormValues = (project?: Project): ProjectFormValues => ({
   no_sp2k: project?.no_sp2k ?? '',
@@ -50,11 +44,8 @@ const toFormValues = (project?: Project): ProjectFormValues => ({
   tanggal_mulai: project?.tanggal_mulai ?? '',
   tanggal_selesai: project?.tanggal_selesai ?? '',
   nilai_pekerjaan: project?.nilai_pekerjaan ?? 0,
-  management_fee: project?.management_fee ?? undefined,
-  tarif_management_fee_persen: project?.tarif_management_fee_persen ?? undefined,
   client_id: project?.client_id ?? '',
   contract_type_id: project?.contract_type_id ?? '',
-  status_kontrak: project?.status_kontrak ?? 'Active',
 });
 
 const AddEditProjectDialog = ({
@@ -98,7 +89,6 @@ const AddEditProjectDialog = ({
         ...data,
         client_id: data.client_id || undefined,
         contract_type_id: data.contract_type_id || undefined,
-        tanggal_selesai: data.tanggal_selesai || undefined,
         tanggal_perjanjian: data.tanggal_perjanjian || undefined,
       };
       return editingItem?.id ? projectsAPI.update(editingItem.id, payload) : projectsAPI.create(payload);
@@ -114,7 +104,9 @@ const AddEditProjectDialog = ({
     onError: (err) => {
       toast({
         title: 'Error',
-        description: getErrorMessage(err, 'Gagal menyimpan proyek.'),
+        description: isAxiosError(err) && err.response?.status === 409
+          ? 'No SP2K sudah dipakai proyek lain.'
+          : getErrorMessage(err, 'Gagal menyimpan proyek.'),
         variant: 'destructive',
       });
     },
@@ -179,37 +171,15 @@ const AddEditProjectDialog = ({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <Label>Nilai Pekerjaan</Label>
-              <CurrencyInput control={control} name="nilai_pekerjaan" placeholder="Rp 0" className="mt-1" />
-              {errors.nilai_pekerjaan && (
-                <p className="text-red-500 text-xs mt-1">{errors.nilai_pekerjaan.message}</p>
-              )}
-            </div>
-            <div>
-              <Label>
-                Management Fee <span className="text-slate-400 text-xs">(opsional)</span>
-              </Label>
-              <CurrencyInput control={control} name="management_fee" placeholder="Rp 0" className="mt-1" />
-              {errors.management_fee && (
-                <p className="text-red-500 text-xs mt-1">{errors.management_fee.message}</p>
-              )}
-            </div>
+          <div>
+            <Label>Nilai Pekerjaan</Label>
+            <CurrencyInput control={control} name="nilai_pekerjaan" placeholder="Rp 0" className="mt-1" />
+            {errors.nilai_pekerjaan && (
+              <p className="text-red-500 text-xs mt-1">{errors.nilai_pekerjaan.message}</p>
+            )}
           </div>
 
-          <div className="grid grid-cols-3 gap-3">
-            <div>
-              <Label>
-                Tarif Fee (%) <span className="text-slate-400 text-xs">(opsional)</span>
-              </Label>
-              <PercentageInput
-                control={control}
-                name="tarif_management_fee_persen"
-                placeholder="0%"
-                className="mt-1"
-              />
-            </div>
+          <div className="grid grid-cols-2 gap-3">
             <div>
               <Label>
                 Klien <span className="text-slate-400 text-xs">(opsional)</span>
@@ -248,22 +218,6 @@ const AddEditProjectDialog = ({
                 )}
               />
             </div>
-          </div>
-
-          <div>
-            <Label>Status</Label>
-            <Controller
-              name="status_kontrak"
-              control={control}
-              render={({ field }) => (
-                <Select
-                  options={statusOptions}
-                  value={field.value}
-                  onChange={field.onChange}
-                  className="mt-1"
-                />
-              )}
-            />
           </div>
 
           <DialogFooter>

@@ -7,7 +7,8 @@ import { appTheme } from '@/lib/agGridTheme';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import AboutCard from '@/components/ui/AboutCard';
 import { Button } from '@/components/ui/button';
-import { Plus, Briefcase } from 'lucide-react';
+import { Plus, Upload, Briefcase } from 'lucide-react';
+import ImportExcelDialog from '@/components/dialogs/operationals/ImportExcelDialog';
 import { useToast } from '@/components/ui/use-toast';
 import AddEditProjectDialog from '@/components/dialogs/operationals/AddEditProjectDialog';
 import { createProjectsColumnDefs, defaultColDef } from '@/config/projectsGridColumns';
@@ -20,6 +21,7 @@ const Projects = () => {
   const { toast } = useToast();
   const gridRef = useRef<AgGridReact | null>(null);
   const [showDialog, setShowDialog] = useState(false);
+  const [showImport, setShowImport] = useState(false);
   const [editingItem, setEditingItem] = useState<Project | null>(null);
 
   const { data, isLoading } = useQuery({
@@ -77,18 +79,55 @@ const Projects = () => {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
             <h1 className="text-2xl font-semibold text-slate-900">Proyek</h1>
-            <p className="text-slate-500 mt-1">Kelola proyek dan anggarannya</p>
+            <p className="text-slate-500 mt-1">Kelola proyek yang sedang dikerjakan</p>
           </div>
         </div>
-        <AboutCard icon={Briefcase} title="Tentang Proyek">
+        <AboutCard icon={Briefcase} title="Tentang Proyek" storageKey="project_card">
           <p className="text-sm text-slate-700 mb-3">
-            Proyek yang dianggarkan dan dilacak terhadap nilai kontrak. Klik menu pada baris
-            dan pilih "Lihat" untuk membuka detail anggaran dan transaksinya.
+            Proyek yang sedang dikerjakan. Proyek berakhir pada Tanggal Selesai, sehingga statusnya
+            dihitung otomatis. Klik menu pada baris dan pilih "Lihat" untuk membuka transaksi dan invoice
+            proyek.
           </p>
+          <div className="space-y-1 text-sm text-slate-600">
+            <p>
+              • <strong className="font-semibold">No. SP2K:</strong> nomor surat perintah kerja proyek
+            </p>
+            <p>
+              • <strong className="font-semibold">No. Perjanjian / No. Amandemen:</strong> nomor kontrak dan amandemennya (opsional)
+            </p>
+            <p>
+              • <strong className="font-semibold">Judul Pekerjaan:</strong> nama pekerjaan yang dikerjakan
+            </p>
+            <p>
+              • <strong className="font-semibold">Tanggal Perjanjian:</strong> tanggal kontrak ditandatangani (opsional, tidak boleh setelah Tanggal Mulai)
+            </p>
+            <p>
+              • <strong className="font-semibold">Tanggal Mulai / Tanggal Selesai:</strong> periode kontrak; Tanggal Selesai wajib dan harus setelah Tanggal Mulai
+            </p>
+            <p>
+              • <strong className="font-semibold">Nilai Pekerjaan:</strong> nilai kontrak, dasar penghitungan sisa anggaran
+            </p>
+            <p>
+              • <strong className="font-semibold">Klien / Jenis Kontrak:</strong> referensi ke data master (opsional)
+            </p>
+            <p>
+              • <strong className="font-semibold">Status:</strong> otomatis: Belum mulai sebelum Tanggal Mulai, Berjalan selama periode kontrak, Habis Kontrak setelah Tanggal Selesai
+            </p>
+            <p>
+              • <strong className="font-semibold">Masa Akhir:</strong> pengingat "Kontrak 1 bulan lagi berakhir" saat kontrak berjalan tinggal 1 bulan atau kurang, selain itu "-"
+            </p>
+            <p>
+              • <strong className="font-semibold">Import Excel:</strong> unduh template, isi, lalu import; semua baris diperiksa lebih dulu dan tidak ada yang tersimpan bila ada kesalahan; No SP2K yang sudah ada diperbarui
+            </p>
+          </div>
         </AboutCard>
         <Card className="border-none shadow-lg">
           <CardHeader className="border-b border-slate-100">
-            <div className="flex justify-end items-center">
+            <div className="flex justify-end items-center gap-2">
+              <Button variant="outline" onClick={() => setShowImport(true)}>
+                <Upload className="w-4 h-4 mr-2" />
+                Import Excel
+              </Button>
               <Button
                 onClick={() => setShowDialog(true)}
                 className="bg-blue-900 hover:bg-blue-800"
@@ -135,6 +174,13 @@ const Projects = () => {
         onClose={() => finishSubmit(false)}
         editingItem={editingItem ?? undefined}
         onFinish={finishSubmit}
+      />
+
+      <ImportExcelDialog
+        isOpen={showImport}
+        onClose={() => setShowImport(false)}
+        kind="projects"
+        onImported={() => queryClient.invalidateQueries({ queryKey: ['projects'] })}
       />
     </div>
   );

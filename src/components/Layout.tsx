@@ -58,6 +58,7 @@ const navigationBudgetGroup: NavGroup = {
   children: [
     { title: 'Proyek', url: '/projects', icon: Briefcase, roles: ['admin', 'user'] },
     { title: 'Transaksi', url: '/transactions', icon: CreditCard, roles: ['admin', 'user'] },
+    { title: 'Invoice', url: '/invoices', icon: FileText, roles: ['admin', 'user'] },
   ],
 };
 
@@ -67,7 +68,7 @@ const navigationReportsGroup: NavGroup = {
   key: 'reports',
   roles: ['admin', 'user'],
   children: [
-    { title: 'Management Fee', url: '/reports/management-fee', icon: Wallet, roles: ['admin'] },
+    { title: 'Laporan Bulanan', url: '/reports/monthly', icon: Wallet, roles: ['admin'] },
   ],
 };
 

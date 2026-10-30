@@ -8,26 +8,12 @@ import { useToast } from '@/components/ui/use-toast';
 import AddEditTransactionDialog from '@/components/dialogs/operationals/AddEditTransactionDialog';
 import { getErrorMessage } from '@/utils/getErrorMessage';
 import { formatRupiah, formatDate } from '@/utils/formatters';
-import { Plus, Pencil, Trash2, Paperclip } from 'lucide-react';
-import type { Transaction, SLAStatus, UUID } from '@/types';
+import { Plus, Pencil, Trash2 } from 'lucide-react';
+import type { Transaction, UUID } from '@/types';
 
 export interface TransactionsPanelProps {
   projectId: UUID;
 }
-
-const slaBadgeClasses: Record<SLAStatus, string> = {
-  on_time: 'bg-green-100 text-green-800 border-green-200',
-  h_plus_1: 'bg-amber-100 text-amber-800 border-amber-200',
-  late: 'bg-red-100 text-red-800 border-red-200',
-  no_data: 'bg-slate-100 text-slate-500 border-slate-200',
-};
-
-const slaLabels: Record<SLAStatus, string> = {
-  on_time: 'Tepat Waktu',
-  h_plus_1: 'H+1',
-  late: 'Terlambat',
-  no_data: 'Tidak Ada Data',
-};
 
 const TransactionsPanel = ({ projectId }: TransactionsPanelProps) => {
   const queryClient = useQueryClient();
@@ -109,20 +95,6 @@ const TransactionsPanel = ({ projectId }: TransactionsPanelProps) => {
                   <Badge variant="outline" className="text-xs">
                     {t.cost_type?.nama_biaya ?? '-'}
                   </Badge>
-                  <Badge variant="outline" className={`text-xs ${slaBadgeClasses[t.sla_status]}`}>
-                    {slaLabels[t.sla_status]}
-                  </Badge>
-                  {t.bukti_transaksi_url && (
-                    <a
-                      href={t.bukti_transaksi_url}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="text-xs text-blue-600 hover:underline flex items-center gap-1"
-                    >
-                      <Paperclip className="w-3 h-3" />
-                      Bukti
-                    </a>
-                  )}
                 </div>
                 {t.deskripsi_realisasi && (
                   <p className="text-xs text-slate-500 truncate mt-0.5">{t.deskripsi_realisasi}</p>

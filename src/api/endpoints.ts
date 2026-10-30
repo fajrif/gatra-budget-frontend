@@ -4,8 +4,6 @@ import type {
   AddressResponse,
   Area,
   AreaResponse,
-  BudgetItem,
-  BudgetItemResponse,
   City,
   CityResponse,
   Client,
@@ -16,16 +14,21 @@ import type {
   CostTypeResponse,
   Country,
   CountryResponse,
+  ImportResult,
+  ImportRow,
   ListEnvelope,
   ListParams,
   LoginRequest,
   LoginResponse,
-  ManagementFeeRow,
-  ManagementFeeTotals,
+  Invoice,
+  InvoiceResponse,
+  InvoiceStatus,
+  MonthlyReportRow,
+  MonthlyReportTotals,
+  ContractStatus,
   Project,
   ProjectResponse,
   ProjectSummary,
-  StatusKontrak,
   Province,
   ProvinceResponse,
   Transaction,
@@ -61,8 +64,8 @@ export const usersAPI = {
  * these off a `validCombinations` map, so both segments are constrained to the
  * literals the backend actually accepts (currently only `users` / `photo`).
  */
-export type UploadResource = 'users' | 'transactions';
-export type UploadField = 'photo' | 'bukti_transaksi';
+export type UploadResource = 'users';
+export type UploadField = 'photo';
 
 export const uploadAPI = {
   upload: (resource: UploadResource, field: UploadField, id: UUID, formData: FormData) =>
@@ -149,72 +152,53 @@ export const projectsAPI = {
   create: (data: Partial<Project>) => api.post<ProjectResponse>('/projects', data),
   update: (id: UUID, data: Partial<Project>) => api.put<ProjectResponse>(`/projects/${id}`, data),
   delete: (id: UUID) => api.delete(`/projects/${id}`),
+  import: (rows: ImportRow[]) => api.post<ImportResult>('/projects/import', { rows }),
 };
 
-// Budget Items API (full CRUD, any authenticated user). Children are
-// server-computed by the BudgetItemSplitter — only create/update the parent.
-export const budgetItemsAPI = {
-  getAll: (params?: ListParams & { project_id?: string; parent_budget_id?: string }) =>
-    api.get<ListEnvelope<'budget_items', BudgetItem>>('/budget-items', { params }),
-  getById: (id: UUID) => api.get<BudgetItemResponse>(`/budget-items/${id}`),
-  create: (data: {
-    project_id: UUID;
-    cost_type_id: UUID;
-    kategori_anggaran: string;
-    total_anggaran: number;
-    deskripsi_anggaran?: string;
-  }) => api.post<BudgetItemResponse>('/budget-items', data),
-  update: (
-    id: UUID,
-    data: {
-      project_id: UUID;
-      cost_type_id: UUID;
-      kategori_anggaran: string;
-      total_anggaran: number;
-      deskripsi_anggaran?: string;
-    },
-  ) => api.put<BudgetItemResponse>(`/budget-items/${id}`, data),
-  delete: (id: UUID) => api.delete(`/budget-items/${id}`),
-};
+// Transactions API (full CRUD, any authenticated user). bulan_realisasi is
+// server-computed — never send it.
+export interface TransactionPayload {
+  project_id: UUID;
+  cost_type_id: UUID;
+  tanggal_transaksi: string;
+  deskripsi_realisasi?: string;
+  jumlah_realisasi: number;
+  jumlah_tenaga_kerja?: number;
+}
 
-// Transactions API (full CRUD, any authenticated user). bulan_realisasi and
-// the management-fee fields are server-computed — never send them.
 export const transactionsAPI = {
   getAll: (params?: ListParams & { project_id?: string; cost_type_id?: string }) =>
     api.get<ListEnvelope<'transactions', Transaction>>('/transactions', { params }),
   getById: (id: UUID) => api.get<TransactionResponse>(`/transactions/${id}`),
-  create: (data: {
-    project_id: UUID;
-    cost_type_id: UUID;
-    tanggal_transaksi: string;
-    tanggal_po_tagihan?: string;
-    deskripsi_realisasi?: string;
-    jumlah_realisasi: number;
-    jumlah_tenaga_kerja?: number;
-  }) => api.post<TransactionResponse>('/transactions', data),
-  update: (
-    id: UUID,
-    data: {
-      project_id: UUID;
-      cost_type_id: UUID;
-      tanggal_transaksi: string;
-      tanggal_po_tagihan?: string;
-      deskripsi_realisasi?: string;
-      jumlah_realisasi: number;
-      jumlah_tenaga_kerja?: number;
-    },
-  ) => api.put<TransactionResponse>(`/transactions/${id}`, data),
+  create: (data: TransactionPayload) => api.post<Transaction>('/transactions', data),
+  update: (id: UUID, data: TransactionPayload) => api.put<Transaction>(`/transactions/${id}`, data),
   delete: (id: UUID) => api.delete(`/transactions/${id}`),
+  import: (rows: ImportRow[]) => api.post<ImportResult>('/transactions/import', { rows }),
 };
 
-// Non-sensitive per-project report sub-routes (open to any authenticated user)
-export const projectReportsAPI = {
-  getBudgetTrend: (projectId: UUID) =>
-    api.get<{ budget_trend: { month: string; anggaran: number; realisasi: number }[] }>(
-      `/projects/${projectId}/budget-trend`,
-    ),
-  getSLABreakdown: (projectId: UUID) =>
-    api.get<{ sla_breakdown: Record<string, number> }>(`/projects/${projectId}/sla-breakdown`),
+// Invoices API (full CRUD, any authenticated user). Create/update return the
+// bare invoice; get-by-id wraps it as `{ invoice }`.
+export interface InvoicePayload {
+  no_invoice: string;
+  project_id: UUID;
+  nama_invoice: string;
+  tgl_tagihan: string;
+  tgl_bayar?: string;
+  status: InvoiceStatus;
+  nilai: number;
+  description?: string;
+  manajemen_fee: number;
+}
+
+export const invoicesAPI = {
+  getAll: (
+    params?: ListParams & { project_id?: string; status?: InvoiceStatus; month?: string },
+  ) => api.get<ListEnvelope<'invoices', Invoice>>('/invoices', { params }),
+  getById: (id: UUID) => api.get<InvoiceResponse>(`/invoices/${id}`),
+  create: (data: InvoicePayload) => api.post<Invoice>('/invoices', data),
+  update: (id: UUID, data: InvoicePayload) => api.put<Invoice>(`/invoices/${id}`, data),
+  delete: (id: UUID) => api.delete(`/invoices/${id}`),
+  import: (rows: ImportRow[]) => api.post<ImportResult>('/invoices/import', { rows }),
 };
 
 // Addresses API (current user's own addresses)
@@ -239,14 +223,17 @@ export const reportsAPI = {
 
   // Admin-only financial reports. Callers must gate on user.role === 'admin';
   // the server rejects anything else with 403.
-  getProjectsSummary: (params?: ListParams & { status_kontrak?: StatusKontrak }) =>
+  getProjectsSummary: (params?: ListParams & { contract_status?: ContractStatus }) =>
     api.get<ListEnvelope<'projects_summary', ProjectSummary>>('/reports/projects-summary', {
       params,
     }),
   getProjectSummary: (projectId: UUID) =>
     api.get<{ project_summary: ProjectSummary }>(`/reports/projects/${projectId}/summary`),
-  getManagementFee: () =>
-    api.get<{ rows: ManagementFeeRow[]; totals: ManagementFeeTotals }>('/reports/management-fee'),
+  getMonthly: (params?: { year?: number; project_id?: UUID }) =>
+    api.get<{ year: number; rows: MonthlyReportRow[]; totals: MonthlyReportTotals }>(
+      '/reports/monthly',
+      { params },
+    ),
 };
 
 export type { UserResponse };

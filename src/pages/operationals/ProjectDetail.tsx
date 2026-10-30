@@ -4,27 +4,21 @@ import { useQuery } from '@tanstack/react-query';
 import { projectsAPI } from '@/api/endpoints';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { ArrowLeft, Calendar, Building2, FileText } from 'lucide-react';
 import { formatRupiah, formatDate } from '@/utils/formatters';
 import { useAuth } from '@/hooks/useAuth';
-import BudgetItemsPanel from '@/components/projects/BudgetItemsPanel';
+import InvoicesPanel from '@/components/projects/InvoicesPanel';
+import ProjectContractBadge from '@/components/projects/ProjectContractBadge';
 import TransactionsPanel from '@/components/projects/TransactionsPanel';
 import ProjectDashboardCharts from '@/components/projects/ProjectDashboardCharts';
 import ProjectFinancialSummary from '@/components/projects/ProjectFinancialSummary';
-
-const statusBadgeClasses: Record<string, string> = {
-  Active: 'bg-green-100 text-green-800 border-green-200',
-  Pending: 'bg-amber-100 text-amber-800 border-amber-200',
-  'Non Aktif': 'bg-slate-100 text-slate-600 border-slate-200',
-};
 
 const ProjectDetail = () => {
   const { projectId } = useParams<{ projectId: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState('dashboard');
+  const [activeTab, setActiveTab] = useState('transaksi');
 
   const { data: project, isLoading } = useQuery({
     queryKey: ['projects', projectId],
@@ -53,9 +47,7 @@ const ProjectDetail = () => {
             <div>
               <div className="flex items-center gap-3">
                 <h1 className="text-2xl font-semibold text-slate-900">{project.judul_pekerjaan}</h1>
-                <Badge variant="outline" className={statusBadgeClasses[project.status_kontrak] ?? ''}>
-                  {project.status_kontrak}
-                </Badge>
+                <ProjectContractBadge project={project} />
               </div>
               <p className="text-slate-500 mt-1">No. SP2K: {project.no_sp2k}</p>
             </div>
@@ -82,11 +74,10 @@ const ProjectDetail = () => {
               <div>
                 <p className="text-xs text-slate-500">Periode</p>
                 <p className="text-sm font-medium text-slate-900">
-                  {formatDate(project.tanggal_mulai)}
-                  {project.tanggal_selesai ? ` – ${formatDate(project.tanggal_selesai)}` : ''}
+                  {formatDate(project.tanggal_mulai)} – {formatDate(project.tanggal_selesai)}
                 </p>
-                {project.jangka_waktu != null && (
-                  <p className="text-xs text-slate-500">{project.jangka_waktu} bulan</p>
+                {project.contract_status === 'ongoing' && (
+                  <p className="text-xs text-slate-500">{project.days_remaining} hari lagi</p>
                 )}
               </div>
             </CardContent>
@@ -104,31 +95,31 @@ const ProjectDetail = () => {
           </Card>
         </div>
 
-        {user?.role === 'admin' && <ProjectFinancialSummary projectId={project.id} />}
+        {user?.role === 'admin' && (
+          <>
+            <ProjectFinancialSummary projectId={project.id} />
+            <ProjectDashboardCharts projectId={project.id} />
+          </>
+        )}
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList>
-            <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
-            <TabsTrigger value="anggaran">Anggaran</TabsTrigger>
             <TabsTrigger value="transaksi">Transaksi</TabsTrigger>
+            <TabsTrigger value="invoice">Invoice</TabsTrigger>
           </TabsList>
-
-          <TabsContent value="dashboard">
-            <ProjectDashboardCharts projectId={project.id} />
-          </TabsContent>
-
-          <TabsContent value="anggaran">
-            <Card className="border-none shadow-lg">
-              <CardContent className="pt-6">
-                <BudgetItemsPanel projectId={project.id} />
-              </CardContent>
-            </Card>
-          </TabsContent>
 
           <TabsContent value="transaksi">
             <Card className="border-none shadow-lg">
               <CardContent className="pt-6">
                 <TransactionsPanel projectId={project.id} />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="invoice">
+            <Card className="border-none shadow-lg">
+              <CardContent className="pt-6">
+                <InvoicesPanel projectId={project.id} />
               </CardContent>
             </Card>
           </TabsContent>

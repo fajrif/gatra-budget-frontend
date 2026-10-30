@@ -24,6 +24,7 @@ import CostTypes from '@/pages/masters/CostTypes';
 import Projects from '@/pages/operationals/Projects';
 import ProjectDetail from '@/pages/operationals/ProjectDetail';
 import Transactions from '@/pages/operationals/Transactions';
+import Invoices from '@/pages/operationals/Invoices';
 
 // Operational pages
 import Users from '@/pages/operationals/Users';
@@ -31,7 +32,7 @@ import UserAddresses from '@/pages/operationals/UserAddresses';
 
 // Reports
 import ReportSample from '@/pages/reports/ReportSample';
-import ManagementFee from '@/pages/reports/ManagementFee';
+import MonthlyReport from '@/pages/reports/MonthlyReport';
 
 // Layout
 import Layout from '@/components/Layout';
@@ -158,6 +159,17 @@ function App() {
               />
 
               <Route
+                path="/invoices"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <Invoices />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
                 path="/transactions"
                 element={
                   <ProtectedRoute>
@@ -238,13 +250,13 @@ function App() {
                 }
               />
 
-              {/* Management fee report — admin only (remaining budget and margin) */}
+              {/* Monthly report — admin only (remaining budget and margin) */}
               <Route
-                path="/reports/management-fee"
+                path="/reports/monthly"
                 element={
                   <ProtectedRoute adminOnly>
                     <Layout>
-                      <ManagementFee />
+                      <MonthlyReport />
                     </Layout>
                   </ProtectedRoute>
                 }

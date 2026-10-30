@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from 'react';
 import { ChevronDown, ChevronUp, type LucideIcon } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
+import { useAuth } from '@/hooks/useAuth';
 
 const TONES = {
   blue: { card: 'from-blue-50 to-indigo-50', icon: 'bg-blue-500' },
@@ -15,17 +16,46 @@ interface AboutCardProps {
   title: string;
   tone?: Tone;
   defaultOpen?: boolean;
+  /**
+   * When set (e.g. "project_card"), the open/closed state is remembered per user
+   * in localStorage under `<storageKey>:<userId>`, so a card the user hid stays hidden.
+   */
+  storageKey?: string;
   children: ReactNode;
 }
+
+const readStoredOpen = (key: string | null, fallback: boolean): boolean => {
+  if (!key) return fallback;
+  try {
+    const stored = window.localStorage.getItem(key);
+    return stored === null ? fallback : stored === 'open';
+  } catch {
+    return fallback;
+  }
+};
 
 const AboutCard = ({
   icon,
   title,
   tone = 'blue',
   defaultOpen = true,
+  storageKey,
   children,
 }: AboutCardProps) => {
-  const [open, setOpen] = useState(defaultOpen);
+  const { user } = useAuth();
+  const persistKey = storageKey && user?.id ? `${storageKey}:${user.id}` : null;
+  const [open, setOpen] = useState(() => readStoredOpen(persistKey, defaultOpen));
+
+  const toggle = () => {
+    const next = !open;
+    setOpen(next);
+    if (!persistKey) return;
+    try {
+      window.localStorage.setItem(persistKey, next ? 'open' : 'closed');
+    } catch {
+      // Storage unavailable (private mode / quota): the card still toggles, just not remembered.
+    }
+  };
   const Icon = icon;
   const t = TONES[tone] ?? TONES.blue;
 
@@ -43,7 +73,7 @@ const AboutCard = ({
           <div className={Icon ? 'flex-1 min-w-0' : ''}>
             <button
               type="button"
-              onClick={() => setOpen((v) => !v)}
+              onClick={toggle}
               aria-expanded={open}
               title={open ? 'Tutup' : 'Buka'}
               className="w-full flex items-center justify-between gap-2 text-left"

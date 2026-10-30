@@ -23,7 +23,7 @@ export interface ListParams {
   city_id?: string;
   area_id?: string;
   /** Project list filter. */
-  status_kontrak?: string;
+  contract_status?: string;
 }
 
 /** Mirrors `helpers.PaginationMeta` in the Go backend. */

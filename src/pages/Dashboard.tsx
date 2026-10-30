@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import AboutCard from '@/components/ui/AboutCard';
 import { Button } from '@/components/ui/button';
-import { Briefcase, CreditCard, type LucideIcon } from 'lucide-react';
+import { Briefcase, CreditCard, FileText, type LucideIcon } from 'lucide-react';
 
 interface QuickLink {
   to: string;
@@ -14,6 +14,7 @@ interface QuickLink {
 const quickLinks: QuickLink[] = [
   { to: '/projects', icon: Briefcase, label: 'Proyek', color: 'text-blue-900' },
   { to: '/transactions', icon: CreditCard, label: 'Transaksi', color: 'text-emerald-600' },
+  { to: '/invoices', icon: FileText, label: 'Invoice', color: 'text-amber-600' },
 ];
 
 const Dashboard = () => (
@@ -43,15 +44,14 @@ const Dashboard = () => (
       <AboutCard title="Tentang Gatra Budget">
         <div className="space-y-3 text-sm text-slate-600">
           <p>
-            Gatra Budget adalah aplikasi manajemen anggaran proyek. Aplikasi ini membantu Anda
-            mencatat proyek beserta nilai kontraknya, menyusun anggaran per jenis biaya, memantau
-            realisasi pengeluaran, serta menghitung biaya manajemen dan margin laba secara otomatis.
+            Gatra Budget adalah aplikasi manajemen anggaran proyek dengan tiga resource inti:
+            proyek yang dikerjakan, pengeluaran, dan tagihan.
           </p>
           <ul className="list-disc list-inside space-y-1 text-slate-500">
-            <li><strong className="font-semibold">Proyek:</strong> kelola proyek, nilai pekerjaan, periode, dan status kontrak</li>
-            <li><strong className="font-semibold">Anggaran:</strong> susun alokasi biaya per proyek dengan skema lumpsum atau bulanan</li>
-            <li><strong className="font-semibold">Transaksi:</strong> catat realisasi pengeluaran dan pantau status SLA pembayaran</li>
-            <li><strong className="font-semibold">Laporan:</strong> biaya manajemen bulanan serta ringkasan sisa anggaran dan margin laba</li>
+            <li><strong className="font-semibold">Proyek:</strong> kelola proyek, nilai pekerjaan, dan periode kontrak (Belum mulai, Berjalan, Habis Kontrak)</li>
+            <li><strong className="font-semibold">Transaksi:</strong> catat seluruh pengeluaran proyek</li>
+            <li><strong className="font-semibold">Invoice:</strong> catat seluruh tagihan dan penerimaan pembayarannya</li>
+            <li><strong className="font-semibold">Laporan Bulanan:</strong> pengeluaran dan penerimaan per bulan, serta sisa anggaran dan margin per proyek (admin)</li>
           </ul>
         </div>
       </AboutCard>

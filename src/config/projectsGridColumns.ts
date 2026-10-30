@@ -1,21 +1,20 @@
 import type { ColDef } from 'ag-grid-community';
-import { ActionMenuCellRenderer, CurrencyCellRenderer, BadgeCellRenderer } from '@/components/ag-grid/cellRenderers';
+import {
+  ActionMenuCellRenderer,
+  BadgeCellRenderer,
+  ContractStatusCellRenderer,
+  CurrencyCellRenderer,
+} from '@/components/ag-grid/cellRenderers';
 import { formatDate } from '@/utils/formatters';
 import type { GridActionHandlers } from '@/config/gridTypes';
 import type { Project } from '@/types';
 
 export { defaultColDef } from '@/config/defaultColDef';
 
-const statusBadgeClasses: Record<string, { bg: string; text: string; border: string }> = {
-  Active: { bg: 'bg-green-100', text: 'text-green-800', border: 'border-green-200' },
-  Pending: { bg: 'bg-amber-100', text: 'text-amber-800', border: 'border-amber-200' },
-  'Non Aktif': { bg: 'bg-slate-100', text: 'text-slate-600', border: 'border-slate-200' },
-};
-
-const statusLabels: Record<string, string> = {
-  Active: 'Aktif',
-  Pending: 'Pending',
-  'Non Aktif': 'Non Aktif',
+const contractStatusLabels: Record<string, string> = {
+  not_started: 'Belum mulai',
+  ongoing: 'Berjalan',
+  expired: 'Habis Kontrak',
 };
 
 export const createProjectsColumnDefs = ({
@@ -43,19 +42,36 @@ export const createProjectsColumnDefs = ({
     valueFormatter: (p) => formatDate(p.value),
   },
   {
+    field: 'tanggal_selesai',
+    headerName: 'Selesai',
+    width: 120,
+    valueFormatter: (p) => formatDate(p.value),
+  },
+  {
     field: 'nilai_pekerjaan',
     headerName: 'Nilai Pekerjaan',
     cellRenderer: CurrencyCellRenderer,
   },
   {
-    field: 'status_kontrak',
+    field: 'contract_status',
     headerName: 'Status',
-    width: 110,
-    valueGetter: (p) => statusLabels[p.data?.status_kontrak ?? ''] ?? p.data?.status_kontrak,
-    cellRendererSelector: (params) => ({
-      component: BadgeCellRenderer,
-      params: { badgeClasses: statusBadgeClasses[params.data?.status_kontrak ?? ''] },
-    }),
+    width: 130,
+    // The value (used for sorting/filtering) is the human label; the renderer
+    // draws the badge from the row.
+    valueGetter: (p) => contractStatusLabels[p.data?.contract_status ?? ''] ?? p.data?.contract_status,
+    cellRenderer: ContractStatusCellRenderer,
+  },
+  {
+    headerName: 'Masa Akhir',
+    width: 210,
+    // Only an ongoing contract ending within a month has a reminder; anything
+    // else is empty, which BadgeCellRenderer shows as "-".
+    valueGetter: (p) => (p.data?.ending_soon ? 'Kontrak 1 bulan lagi berakhir' : ''),
+    cellRenderer: BadgeCellRenderer,
+    cellRendererParams: {
+      badgeClasses: { bg: 'bg-amber-100', text: 'text-amber-800', border: 'border-amber-200' },
+    },
+    tooltipValueGetter: (p) => (p.data?.ending_soon ? `${p.data.days_remaining} hari lagi` : undefined),
   },
   {
     headerName: 'Aksi',

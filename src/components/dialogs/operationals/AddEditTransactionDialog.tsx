@@ -1,6 +1,6 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { transactionsAPI, costTypesAPI, projectsAPI, uploadAPI } from '@/api/endpoints';
+import { transactionsAPI, costTypesAPI, projectsAPI } from '@/api/endpoints';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
@@ -18,7 +18,7 @@ import {
 import { transactionSchema } from '@/utils/validations/Transaction';
 import { useToast } from '@/components/ui/use-toast';
 import { getErrorMessage } from '@/utils/getErrorMessage';
-import { Save, Loader2, Paperclip } from 'lucide-react';
+import { Save, Loader2 } from 'lucide-react';
 import type { z } from 'zod';
 import type { Transaction, UUID } from '@/types';
 
@@ -39,13 +39,10 @@ const toFormValues = (projectId: UUID | undefined, item?: Transaction): Transact
   project_id: item?.project_id ?? projectId ?? '',
   cost_type_id: item?.cost_type_id ?? '',
   tanggal_transaksi: item?.tanggal_transaksi ?? '',
-  tanggal_po_tagihan: item?.tanggal_po_tagihan ?? '',
   deskripsi_realisasi: item?.deskripsi_realisasi ?? '',
   jumlah_realisasi: item?.jumlah_realisasi ?? 0,
   jumlah_tenaga_kerja: item?.jumlah_tenaga_kerja ?? undefined,
 });
-
-const ALLOWED_BUKTI_EXTENSIONS = '.jpg,.jpeg,.png,.webp,.pdf';
 
 const AddEditTransactionDialog = ({
   isOpen,
@@ -56,9 +53,6 @@ const AddEditTransactionDialog = ({
 }: AddEditTransactionDialogProps) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [isUploading, setIsUploading] = useState(false);
 
   const { data: costTypesData } = useQuery({
     queryKey: ['cost-types-all'],
@@ -87,30 +81,13 @@ const AddEditTransactionDialog = ({
 
   useEffect(() => {
     reset(toFormValues(projectId, editingItem));
-    setSelectedFile(null);
-    if (fileInputRef.current) fileInputRef.current.value = '';
   }, [editingItem, projectId, reset]);
 
   const saveMutation = useMutation({
-    mutationFn: async (data: TransactionFormValues) => {
-      const payload = {
-        ...data,
-        tanggal_po_tagihan: data.tanggal_po_tagihan || undefined,
-      };
-      const res = editingItem?.id
-        ? await transactionsAPI.update(editingItem.id, payload)
-        : await transactionsAPI.create(payload);
-
-      const transactionId = editingItem?.id ?? (res.data as { id?: UUID }).id;
-      if (selectedFile && transactionId) {
-        setIsUploading(true);
-        const formData = new FormData();
-        formData.append('file', selectedFile);
-        await uploadAPI.upload('transactions', 'bukti_transaksi', transactionId, formData);
-        setIsUploading(false);
-      }
-      return res;
-    },
+    mutationFn: (data: TransactionFormValues) =>
+      editingItem?.id
+        ? transactionsAPI.update(editingItem.id, data)
+        : transactionsAPI.create(data),
     onSuccess: () => {
       toast({
         title: 'Success',
@@ -121,7 +98,6 @@ const AddEditTransactionDialog = ({
       onFinish(true);
     },
     onError: (err) => {
-      setIsUploading(false);
       toast({
         title: 'Error',
         description: getErrorMessage(err, 'Gagal menyimpan transaksi.'),
@@ -133,7 +109,7 @@ const AddEditTransactionDialog = ({
   const mapOptions = (items: { id: string; nama_biaya?: string; judul_pekerjaan?: string }[] = []) =>
     items.map((i) => ({ value: i.id, label: i.nama_biaya ?? i.judul_pekerjaan ?? '' }));
 
-  const isBusy = saveMutation.isPending || isUploading;
+  const isBusy = saveMutation.isPending;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -187,20 +163,12 @@ const AddEditTransactionDialog = ({
             )}
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <Label>Tanggal Transaksi</Label>
-              <Input type="date" {...register('tanggal_transaksi')} className="mt-1" />
-              {errors.tanggal_transaksi && (
-                <p className="text-red-500 text-xs mt-1">{errors.tanggal_transaksi.message}</p>
-              )}
-            </div>
-            <div>
-              <Label>
-                Tanggal PO/Tagihan <span className="text-slate-400 text-xs">(opsional)</span>
-              </Label>
-              <Input type="date" {...register('tanggal_po_tagihan')} className="mt-1" />
-            </div>
+          <div>
+            <Label>Tanggal Transaksi</Label>
+            <Input type="date" {...register('tanggal_transaksi')} className="mt-1" />
+            {errors.tanggal_transaksi && (
+              <p className="text-red-500 text-xs mt-1">{errors.tanggal_transaksi.message}</p>
+            )}
           </div>
 
           <div className="grid grid-cols-2 gap-3">
@@ -243,41 +211,6 @@ const AddEditTransactionDialog = ({
               Deskripsi <span className="text-slate-400 text-xs">(opsional)</span>
             </Label>
             <Input {...register('deskripsi_realisasi')} className="mt-1" />
-          </div>
-
-          <div>
-            <Label>
-              Bukti Transaksi <span className="text-slate-400 text-xs">(opsional)</span>
-            </Label>
-            <div className="mt-1 flex items-center gap-2">
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept={ALLOWED_BUKTI_EXTENSIONS}
-                onChange={(e) => setSelectedFile(e.target.files?.[0] ?? null)}
-                className="hidden"
-                id="bukti-transaksi-input"
-              />
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => fileInputRef.current?.click()}
-              >
-                <Paperclip className="w-4 h-4 mr-2" />
-                {selectedFile ? selectedFile.name : 'Pilih file'}
-              </Button>
-              {editingItem?.bukti_transaksi_url && !selectedFile && (
-                <a
-                  href={editingItem.bukti_transaksi_url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-xs text-blue-600 hover:underline"
-                >
-                  Lihat file saat ini
-                </a>
-              )}
-            </div>
-            <p className="text-xs text-slate-500 mt-1">JPEG, PNG, WebP, atau PDF.</p>
           </div>
 
           <DialogFooter>
