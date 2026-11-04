@@ -49,9 +49,9 @@ const Dashboard = () => (
           </p>
           <ul className="list-disc list-inside space-y-1 text-slate-500">
             <li><strong className="font-semibold">Proyek:</strong> kelola proyek, nilai pekerjaan, dan periode kontrak (Belum mulai, Berjalan, Habis Kontrak)</li>
-            <li><strong className="font-semibold">Transaksi:</strong> catat seluruh pengeluaran proyek</li>
+            <li><strong className="font-semibold">Transaksi:</strong> catat pengeluaran proyek dan beban operasional (di luar proyek)</li>
             <li><strong className="font-semibold">Invoice:</strong> catat seluruh tagihan dan penerimaan pembayarannya</li>
-            <li><strong className="font-semibold">Laporan Bulanan:</strong> pengeluaran dan penerimaan per bulan, serta sisa anggaran dan margin per proyek (admin)</li>
+            <li><strong className="font-semibold">Laporan Bulanan:</strong> pengeluaran (proyek dan operasional) dan penerimaan per bulan, serta sisa anggaran dan margin per proyek (admin)</li>
           </ul>
         </div>
       </AboutCard>

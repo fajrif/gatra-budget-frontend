@@ -9,7 +9,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { invoicesAPI, projectsAPI, transactionsAPI } from '@/api/endpoints';
+import { costOperationsAPI, invoicesAPI, projectsAPI, transactionsAPI } from '@/api/endpoints';
 import { downloadImportTemplate, parseImportFile } from '@/utils/excelImport';
 import { useToast } from '@/components/ui/use-toast';
 import { getErrorMessage } from '@/utils/getErrorMessage';
@@ -28,12 +28,14 @@ const LABELS: Record<ImportKind, { title: string; item: string }> = {
   projects: { title: 'Import Proyek dari Excel', item: 'proyek' },
   transactions: { title: 'Import Transaksi dari Excel', item: 'transaksi' },
   invoices: { title: 'Import Invoice dari Excel', item: 'invoice' },
+  cost_operations: { title: 'Import Beban Operasional dari Excel', item: 'beban operasional' },
 };
 
 const importers: Record<ImportKind, (rows: ImportRow[]) => Promise<{ data: ImportResult }>> = {
   projects: projectsAPI.import,
   transactions: transactionsAPI.import,
   invoices: invoicesAPI.import,
+  cost_operations: costOperationsAPI.import,
 };
 
 const ImportExcelDialog = ({ isOpen, onClose, kind, onImported }: ImportExcelDialogProps) => {

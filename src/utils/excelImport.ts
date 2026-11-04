@@ -1,6 +1,12 @@
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
-import { clientsAPI, contractTypesAPI, costTypesAPI, projectsAPI } from '@/api/endpoints';
+import {
+  clientsAPI,
+  contractTypesAPI,
+  costTypesAPI,
+  operationalCostTypesAPI,
+  projectsAPI,
+} from '@/api/endpoints';
 import type { ImportKind, ImportRow } from '@/types';
 
 const XLSX_MIME = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
@@ -66,6 +72,21 @@ const TEMPLATES: Record<ImportKind, TemplateDefinition> = {
       'Transaksi tidak punya kunci unik: setiap baris selalu membuat transaksi BARU. Jangan import file yang sama dua kali.',
     ],
   },
+  cost_operations: {
+    filename: 'Template-Import-Beban-Operasional.xlsx',
+    columns: [
+      { key: 'operational_cost_type', label: 'Jenis Beban Operasional', required: true, type: 'text', width: 30, note: 'nama jenis persis seperti di sheet Referensi', example: '' },
+      { key: 'tanggal_transaksi', label: 'Tanggal Transaksi', required: true, type: 'date', width: 18, note: DATE_NOTE, example: '2026-03-15' },
+      { key: 'jumlah', label: 'Jumlah', required: true, type: 'number', width: 20, note: 'angka, harus lebih dari 100.000', example: 250000 },
+      { key: 'deskripsi', label: 'Deskripsi', required: false, type: 'text', width: 40, note: 'opsional', example: 'Makan siang tim' },
+    ],
+    rules: [
+      'Jenis Beban Operasional harus sudah ada di sistem (menu Jenis Beban Operasional).',
+      'jumlah harus lebih dari 100.000.',
+      'Beban operasional tidak terkait proyek, jadi tidak ada kolom No SP2K.',
+      'Beban operasional tidak punya kunci unik: setiap baris selalu membuat data BARU. Jangan import file yang sama dua kali.',
+    ],
+  },
   invoices: {
     filename: 'Template-Import-Invoice.xlsx',
     columns: [
@@ -105,6 +126,16 @@ const loadReferences = async (kind: ImportKind): Promise<ReferenceList[]> => {
     return [
       { heading: 'Klien', values: (clients.data?.clients ?? []).map((c) => c.name) },
       { heading: 'Jenis Kontrak', values: (contractTypes.data?.contract_types ?? []).map((c) => c.name) },
+    ];
+  }
+
+  if (kind === 'cost_operations') {
+    const operationalTypes = await operationalCostTypesAPI.getAll({ all: true });
+    return [
+      {
+        heading: 'Jenis Beban Operasional',
+        values: (operationalTypes.data?.operational_cost_types ?? []).map((c) => c.nama_biaya),
+      },
     ];
   }
 

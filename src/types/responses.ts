@@ -5,7 +5,16 @@
 
 import type { Address, Area, City, Country, Province } from './location';
 import type { User } from './user';
-import type { Client, ContractType, CostType, Invoice, Project, Transaction } from './budget';
+import type {
+  Client,
+  ContractType,
+  CostOperation,
+  CostType,
+  Invoice,
+  OperationalCostType,
+  Project,
+  Transaction,
+} from './budget';
 
 export type CountryResponse = { country: Country };
 export type ProvinceResponse = { province: Province };
@@ -19,3 +28,5 @@ export type CostTypeResponse = { cost_type: CostType };
 export type ProjectResponse = { project: Project };
 export type InvoiceResponse = { invoice: Invoice };
 export type TransactionResponse = { transaction: Transaction };
+export type OperationalCostTypeResponse = { operational_cost_type: OperationalCostType };
+export type CostOperationResponse = { cost_operation: CostOperation };

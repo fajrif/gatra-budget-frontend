@@ -10,6 +10,8 @@ import type {
   ClientResponse,
   ContractType,
   ContractTypeResponse,
+  CostOperation,
+  CostOperationResponse,
   CostType,
   CostTypeResponse,
   Country,
@@ -24,6 +26,9 @@ import type {
   InvoiceResponse,
   InvoiceStatus,
   MonthlyReportRow,
+  OperationalCostType,
+  OperationalCostTypeResponse,
+  OperationalSummaryRow,
   MonthlyReportTotals,
   ContractStatus,
   Project,
@@ -144,6 +149,41 @@ export const costTypesAPI = {
   delete: (id: UUID) => api.delete(`/cost-types/${id}`),
 };
 
+// Operational Cost Types API (reads open to any authenticated user, writes admin-only)
+export const operationalCostTypesAPI = {
+  getAll: (params?: ListParams) =>
+    api.get<ListEnvelope<'operational_cost_types', OperationalCostType>>(
+      '/operational-cost-types',
+      { params },
+    ),
+  getById: (id: UUID) => api.get<OperationalCostTypeResponse>(`/operational-cost-types/${id}`),
+  create: (data: Partial<OperationalCostType>) =>
+    api.post<OperationalCostType>('/operational-cost-types', data),
+  update: (id: UUID, data: Partial<OperationalCostType>) =>
+    api.put<OperationalCostType>(`/operational-cost-types/${id}`, data),
+  delete: (id: UUID) => api.delete(`/operational-cost-types/${id}`),
+};
+
+// Cost Operations API (operational expenses with no project; any authenticated
+// user). bulan_realisasi is server-computed — never send it.
+export interface CostOperationPayload {
+  operational_cost_type_id: UUID;
+  tanggal_transaksi: string;
+  deskripsi?: string;
+  jumlah: number;
+}
+
+export const costOperationsAPI = {
+  getAll: (params?: ListParams & { operational_cost_type_id?: string; month?: string }) =>
+    api.get<ListEnvelope<'cost_operations', CostOperation>>('/cost-operations', { params }),
+  getById: (id: UUID) => api.get<CostOperationResponse>(`/cost-operations/${id}`),
+  create: (data: CostOperationPayload) => api.post<CostOperation>('/cost-operations', data),
+  update: (id: UUID, data: CostOperationPayload) =>
+    api.put<CostOperation>(`/cost-operations/${id}`, data),
+  delete: (id: UUID) => api.delete(`/cost-operations/${id}`),
+  import: (rows: ImportRow[]) => api.post<ImportResult>('/cost-operations/import', { rows }),
+};
+
 // Projects API (full CRUD, any authenticated user)
 export const projectsAPI = {
   getAll: (params?: ListParams) =>
@@ -232,6 +272,11 @@ export const reportsAPI = {
   getMonthly: (params?: { year?: number; project_id?: UUID }) =>
     api.get<{ year: number; rows: MonthlyReportRow[]; totals: MonthlyReportTotals }>(
       '/reports/monthly',
+      { params },
+    ),
+  getOperationalSummary: (params?: { year?: number }) =>
+    api.get<{ year: number; rows: OperationalSummaryRow[]; total: number }>(
+      '/reports/operational-summary',
       { params },
     ),
 };

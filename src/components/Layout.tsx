@@ -48,6 +48,7 @@ const navigationItems: NavItem[] = [
   { title: 'Klien', url: '/clients', icon: Building2, roles: ['admin'] },
   { title: 'Jenis Kontrak', url: '/contract-types', icon: FileText, roles: ['admin'] },
   { title: 'Jenis Biaya', url: '/cost-types', icon: Receipt, roles: ['admin'] },
+  { title: 'Jenis Beban Operasional', url: '/operational-cost-types', icon: Building2, roles: ['admin'] },
 ];
 
 const navigationBudgetGroup: NavGroup = {

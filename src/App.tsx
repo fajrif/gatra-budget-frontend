@@ -19,6 +19,7 @@ import Areas from '@/pages/masters/Areas';
 import Clients from '@/pages/masters/Clients';
 import ContractTypes from '@/pages/masters/ContractTypes';
 import CostTypes from '@/pages/masters/CostTypes';
+import OperationalCostTypes from '@/pages/masters/OperationalCostTypes';
 
 // Projects (open to any authenticated user)
 import Projects from '@/pages/operationals/Projects';
@@ -209,6 +210,17 @@ function App() {
                   <ProtectedRoute adminOnly>
                     <Layout>
                       <CostTypes />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/operational-cost-types"
+                element={
+                  <ProtectedRoute adminOnly>
+                    <Layout>
+                      <OperationalCostTypes />
                     </Layout>
                   </ProtectedRoute>
                 }

@@ -34,6 +34,15 @@ export interface CostType {
   updated_at: ISODateString;
 }
 
+/** Mirrors `models.OperationalCostType`: category for operational expenses. */
+export interface OperationalCostType {
+  id: UUID;
+  nama_biaya: string;
+  deskripsi?: string | null;
+  created_at: ISODateString;
+  updated_at: ISODateString;
+}
+
 /** YYYY-MM-DD, as emitted by Go's models.Date. */
 export type DateOnlyString = string;
 
@@ -93,6 +102,23 @@ export interface Transaction {
   updated_at: ISODateString;
 }
 
+/**
+ * Mirrors `models.CostOperation`: an operational expense with no project.
+ * `bulan_realisasi` is server-computed from `tanggal_transaksi`.
+ */
+export interface CostOperation {
+  id: UUID;
+  operational_cost_type_id: UUID;
+  operational_cost_type?: OperationalCostType | null;
+  tanggal_transaksi: DateOnlyString;
+  bulan_realisasi?: string | null;
+  deskripsi?: string | null;
+  jumlah: number;
+  created_by: string;
+  created_at: ISODateString;
+  updated_at: ISODateString;
+}
+
 /** Submit = billed, Clearing = paid (tgl_bayar required). */
 export type InvoiceStatus = 'Submit' | 'Clearing';
 
@@ -140,7 +166,12 @@ export interface ProjectSummary {
 /** Mirrors `handlers.MonthlyReportRow`: one calendar month, month = "YYYY-MM". */
 export interface MonthlyReportRow {
   month: string;
+  /** Project expenses (transactions). */
   pengeluaran: number;
+  /** Operational expenses (cost_operations); 0 when a project filter is active. */
+  operasional: number;
+  /** pengeluaran + operasional. */
+  total_pengeluaran: number;
   tagihan: number;
   penerimaan: number;
   manajemen_fee: number;
@@ -150,8 +181,17 @@ export interface MonthlyReportRow {
 /** Mirrors `handlers.MonthlyReportTotals`. */
 export interface MonthlyReportTotals {
   pengeluaran: number;
+  operasional: number;
+  total_pengeluaran: number;
   tagihan: number;
   penerimaan: number;
   manajemen_fee: number;
   selisih: number;
+}
+
+/** Mirrors `handlers.OperationalSummaryRow`. */
+export interface OperationalSummaryRow {
+  operational_cost_type_id: UUID;
+  nama_biaya: string;
+  total: number;
 }

@@ -25,6 +25,7 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { ShieldAlert } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { formatRupiah, formatRupiahShort } from '@/utils/formatters';
 import ProjectContractBadge from '@/components/projects/ProjectContractBadge';
 
@@ -32,6 +33,8 @@ const MONTH_NAMES = [
   'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
   'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember',
 ];
+
+type ChartMode = 'separate' | 'combined';
 
 const currentYear = new Date().getFullYear();
 const yearOptions = Array.from({ length: 7 }, (_, i) => {
@@ -47,6 +50,7 @@ const yearOptions = Array.from({ length: 7 }, (_, i) => {
 const MonthlyReport = () => {
   const [year, setYear] = useState(currentYear);
   const [projectId, setProjectId] = useState('');
+  const [chartMode, setChartMode] = useState<ChartMode>('separate');
 
   const { data: projects } = useQuery({
     queryKey: ['projects-all'],
@@ -60,6 +64,13 @@ const MonthlyReport = () => {
     select: (res) => ({ rows: res.data?.rows ?? [], totals: res.data?.totals }),
   });
 
+  const { data: operationalSummary } = useQuery({
+    queryKey: ['reports', 'operational-summary', { year }],
+    queryFn: () => reportsAPI.getOperationalSummary({ year }),
+    select: (res) => res.data,
+    enabled: !projectId,
+  });
+
   const { data: summaries, isLoading: summaryLoading } = useQuery({
     queryKey: ['reports', 'projects-summary'],
     queryFn: () => reportsAPI.getProjectsSummary({ all: true }),
@@ -70,11 +81,13 @@ const MonthlyReport = () => {
   const totals = monthly?.totals;
 
   const totalCards = [
-    { label: 'Pengeluaran', value: totals?.pengeluaran },
+    { label: 'Pengeluaran Proyek', value: totals?.pengeluaran },
+    { label: 'Beban Operasional', value: totals?.operasional },
+    { label: 'Total Pengeluaran', value: totals?.total_pengeluaran },
     { label: 'Tagihan', value: totals?.tagihan },
     { label: 'Penerimaan', value: totals?.penerimaan },
     { label: 'Manajemen Fee', value: totals?.manajemen_fee },
-    { label: 'Selisih (Penerimaan − Pengeluaran)', value: totals?.selisih },
+    { label: 'Selisih (Penerimaan − Total Pengeluaran)', value: totals?.selisih },
   ];
 
   return (
@@ -96,8 +109,9 @@ const MonthlyReport = () => {
               <div>
                 <h3 className="font-semibold text-slate-900 mb-2">Khusus Internal</h3>
                 <p className="text-sm text-slate-700">
-                  Laporan ini hanya terlihat oleh administrator. Pengeluaran dihitung dari Transaksi per
-                  bulan transaksi. Tagihan dihitung dari Invoice per bulan tagihan. Penerimaan dan
+                  Laporan ini hanya terlihat oleh administrator. Pengeluaran Proyek dihitung dari Transaksi
+                  per bulan transaksi; Beban Operasional dari pengeluaran di luar proyek. Filter Proyek
+                  hanya menampilkan Pengeluaran Proyek, sehingga Beban Operasional tidak ikut dihitung. Tagihan dihitung dari Invoice per bulan tagihan. Penerimaan dan
                   manajemen fee dihitung dari Invoice berstatus Clearing per bulan bayar. Server
                   menghitung semua angka.
                 </p>
@@ -133,7 +147,7 @@ const MonthlyReport = () => {
           </CardContent>
         </Card>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
           {totalCards.map((c) => (
             <Card key={c.label} className="border-none shadow-md">
               <CardContent className="pt-6">
@@ -148,7 +162,28 @@ const MonthlyReport = () => {
 
         <Card className="border-none shadow-lg">
           <CardHeader className="border-b border-slate-100">
-            <h2 className="text-sm font-semibold text-slate-900">Pengeluaran vs Penerimaan {year}</h2>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <h2 className="text-sm font-semibold text-slate-900">Pengeluaran vs Penerimaan {year}</h2>
+              <div className="inline-flex rounded-md border border-slate-200 p-0.5">
+                {(
+                  [
+                    { value: 'separate', label: 'Terpisah' },
+                    { value: 'combined', label: 'Gabungan' },
+                  ] as const
+                ).map((o) => (
+                  <Button
+                    key={o.value}
+                    type="button"
+                    size="sm"
+                    variant={chartMode === o.value ? 'default' : 'ghost'}
+                    className={chartMode === o.value ? 'bg-blue-900 hover:bg-blue-800' : ''}
+                    onClick={() => setChartMode(o.value)}
+                  >
+                    {o.label}
+                  </Button>
+                ))}
+              </div>
+            </div>
           </CardHeader>
           <CardContent className="pt-6">
             {monthlyLoading ? (
@@ -161,7 +196,25 @@ const MonthlyReport = () => {
                   <YAxis tickFormatter={(v) => formatRupiahShort(v)} tick={{ fontSize: 11 }} width={70} />
                   <Tooltip formatter={(value: number) => formatRupiah(value)} />
                   <Legend />
-                  <Bar dataKey="pengeluaran" name="Pengeluaran" fill="#dc2626" radius={[4, 4, 0, 0]} />
+                  {chartMode === 'separate' ? (
+                    <>
+                      <Bar dataKey="pengeluaran" name="Pengeluaran Proyek" stackId="biaya" fill="#dc2626" />
+                      <Bar
+                        dataKey="operasional"
+                        name="Beban Operasional"
+                        stackId="biaya"
+                        fill="#f59e0b"
+                        radius={[4, 4, 0, 0]}
+                      />
+                    </>
+                  ) : (
+                    <Bar
+                      dataKey="total_pengeluaran"
+                      name="Total Pengeluaran"
+                      fill="#dc2626"
+                      radius={[4, 4, 0, 0]}
+                    />
+                  )}
                   <Bar dataKey="penerimaan" name="Penerimaan" fill="#16a34a" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
@@ -182,7 +235,9 @@ const MonthlyReport = () => {
                   <TableHeader>
                     <TableRow>
                       <TableHead>Bulan</TableHead>
-                      <TableHead className="text-right">Pengeluaran</TableHead>
+                      <TableHead className="text-right">Pengeluaran Proyek</TableHead>
+                      <TableHead className="text-right">Beban Operasional</TableHead>
+                      <TableHead className="text-right">Total Pengeluaran</TableHead>
                       <TableHead className="text-right">Tagihan</TableHead>
                       <TableHead className="text-right">Penerimaan</TableHead>
                       <TableHead className="text-right">Manajemen Fee</TableHead>
@@ -194,6 +249,8 @@ const MonthlyReport = () => {
                       <TableRow key={row.month}>
                         <TableCell className="font-medium">{MONTH_NAMES[i]}</TableCell>
                         <TableCell className="text-right">{formatRupiah(row.pengeluaran)}</TableCell>
+                        <TableCell className="text-right">{formatRupiah(row.operasional)}</TableCell>
+                        <TableCell className="text-right">{formatRupiah(row.total_pengeluaran)}</TableCell>
                         <TableCell className="text-right">{formatRupiah(row.tagihan)}</TableCell>
                         <TableCell className="text-right">{formatRupiah(row.penerimaan)}</TableCell>
                         <TableCell className="text-right">{formatRupiah(row.manajemen_fee)}</TableCell>
@@ -208,6 +265,8 @@ const MonthlyReport = () => {
                       <TableRow>
                         <TableCell className="font-semibold">Total</TableCell>
                         <TableCell className="text-right font-semibold">{formatRupiah(totals.pengeluaran)}</TableCell>
+                        <TableCell className="text-right font-semibold">{formatRupiah(totals.operasional)}</TableCell>
+                        <TableCell className="text-right font-semibold">{formatRupiah(totals.total_pengeluaran)}</TableCell>
                         <TableCell className="text-right font-semibold">{formatRupiah(totals.tagihan)}</TableCell>
                         <TableCell className="text-right font-semibold">{formatRupiah(totals.penerimaan)}</TableCell>
                         <TableCell className="text-right font-semibold">{formatRupiah(totals.manajemen_fee)}</TableCell>
@@ -220,6 +279,46 @@ const MonthlyReport = () => {
             )}
           </CardContent>
         </Card>
+
+        {!projectId && (
+          <Card className="border-none shadow-lg">
+            <CardHeader className="border-b border-slate-100">
+              <h2 className="text-sm font-semibold text-slate-900">Beban Operasional per Jenis {year}</h2>
+            </CardHeader>
+            <CardContent className="pt-6">
+              {(operationalSummary?.rows.length ?? 0) === 0 ? (
+                <div className="text-center py-8 text-slate-500">
+                  Belum ada beban operasional pada tahun ini.
+                </div>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Jenis Beban</TableHead>
+                      <TableHead className="text-right">Total</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {operationalSummary?.rows.map((r) => (
+                      <TableRow key={r.operational_cost_type_id}>
+                        <TableCell className="font-medium">{r.nama_biaya}</TableCell>
+                        <TableCell className="text-right">{formatRupiah(r.total)}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                  <TableFooter>
+                    <TableRow>
+                      <TableCell className="font-semibold">Total</TableCell>
+                      <TableCell className="text-right font-semibold">
+                        {formatRupiah(operationalSummary?.total ?? 0)}
+                      </TableCell>
+                    </TableRow>
+                  </TableFooter>
+                </Table>
+              )}
+            </CardContent>
+          </Card>
+        )}
 
         <Card className="border-none shadow-lg">
           <CardHeader className="border-b border-slate-100">

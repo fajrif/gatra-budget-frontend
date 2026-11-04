@@ -1,5 +1,5 @@
 /** Which resource an Excel import targets. */
-export type ImportKind = 'projects' | 'transactions' | 'invoices';
+export type ImportKind = 'projects' | 'transactions' | 'invoices' | 'cost_operations';
 
 /** One Excel row as sent to `POST /<resource>/import`: every cell is text, `row` is the sheet row number. */
 export type ImportRow = { row: number } & Record<string, string | number>;
