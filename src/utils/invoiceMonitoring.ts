@@ -72,8 +72,10 @@ export interface MonitoringLine {
   key: string;
   /** 1-12. */
   month: number;
-  /** Month name on the first line of the month, '' on the following ones. */
+  /** Month name on the first line of the month ('' on the following ones); includes the year for lines outside the report year. */
   bulan: string;
+  /** True for a month before/after the report year (an invoice billed late or early); rendered italic. */
+  outsideYear: boolean;
   /** null for a month without invoices. */
   invoice: Invoice | null;
   periodeText: string;
@@ -92,44 +94,58 @@ export interface MonitoringResult {
 }
 
 /**
- * Twelve fixed months; an invoice sits in the month of its tgl_tagihan (SPR
+ * January-December of `year`, extended with extra months (outsideYear) up to the
+ * last month an invoice was billed in, or back to the first, so an invoice
+ * whose period belongs to `year` but was billed in the next year (or before it)
+ * still has a line. An invoice sits in the month of its tgl_tagihan (SPR
  * included). A month with several invoices gets several lines, a month with
- * none gets one empty line. Invoices of another year are ignored.
+ * none gets one empty line. Which invoices belong to `year` is decided by the
+ * server (periode_year); nothing is filtered out here.
  */
 export const buildMonitoringLines = (invoices: Invoice[], year: number): MonitoringResult => {
+  // Absolute month index: year * 12 + (month - 1)
   const byMonth = new Map<number, Invoice[]>();
+  let first = year * 12;
+  let last = year * 12 + 11;
   let total = 0;
   let unpaid = 0;
   let invoiceCount = 0;
 
   for (const inv of invoices) {
-    if (Number(inv.tgl_tagihan.slice(0, 4)) !== year) continue;
-    const month = Number(inv.tgl_tagihan.slice(5, 7));
-    if (month < 1 || month > 12) continue;
-    byMonth.set(month, [...(byMonth.get(month) ?? []), inv]);
+    const y = Number(inv.tgl_tagihan.slice(0, 4));
+    const m = Number(inv.tgl_tagihan.slice(5, 7));
+    if (!y || m < 1 || m > 12) continue;
+    const idx = y * 12 + (m - 1);
+    byMonth.set(idx, [...(byMonth.get(idx) ?? []), inv]);
+    first = Math.min(first, idx);
+    last = Math.max(last, idx);
     total += Number(inv.nilai);
     if (inv.status === 'Submit') unpaid += Number(inv.nilai);
     invoiceCount += 1;
   }
 
   const lines: MonitoringLine[] = [];
-  for (let month = 1; month <= 12; month++) {
-    const name = MONITORING_MONTH_NAMES[month - 1];
-    const items = (byMonth.get(month) ?? []).sort(
+  for (let idx = first; idx <= last; idx++) {
+    const lineYear = Math.floor(idx / 12);
+    const month = (idx % 12) + 1;
+    const outsideYear = lineYear !== year;
+    const name = MONITORING_MONTH_NAMES[month - 1] + (outsideYear ? ` ${lineYear}` : '');
+    const items = (byMonth.get(idx) ?? []).sort(
       (a, b) =>
         a.tgl_tagihan.localeCompare(b.tgl_tagihan) || a.no_invoice.localeCompare(b.no_invoice),
     );
     if (items.length === 0) {
-      lines.push({ key: `m${month}`, month, bulan: name, invoice: null, periodeText: '-', periodeMismatch: false });
+      lines.push({ key: `m${idx}`, month, bulan: name, outsideYear, invoice: null, periodeText: '-', periodeMismatch: false });
       continue;
     }
-    const billedMonth = `${year}-${String(month).padStart(2, '0')}`;
+    const billedMonth = `${lineYear}-${String(month).padStart(2, '0')}`;
     items.forEach((inv, i) => {
       const periods = inv.periode_tagihan ?? [];
       lines.push({
         key: inv.id,
         month,
         bulan: i === 0 ? name : '',
+        outsideYear,
         invoice: inv,
         periodeText: formatPeriods(periods),
         periodeMismatch: periods.length !== 1 || periods[0] !== billedMonth,

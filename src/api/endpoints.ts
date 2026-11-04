@@ -239,7 +239,8 @@ export const invoicesAPI = {
       project_group_id?: string;
       status?: InvoiceStatus;
       month?: string;
-      year?: number | string;
+      /** Invoices whose earliest billing period is in this year. */
+      periode_year?: number | string;
     },
   ) => api.get<ListEnvelope<'invoices', Invoice>>('/invoices', { params }),
   getById: (id: UUID) => api.get<InvoiceResponse>(`/invoices/${id}`),

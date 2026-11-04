@@ -41,6 +41,7 @@ const yearOptions = Array.from({ length: 7 }, (_, i) => {
 
 type ExportLine = {
   bulan: string;
+  outsideYear: boolean;
   noInvoice: string;
   periode: string;
   mismatch: boolean;
@@ -79,7 +80,7 @@ const InvoiceMonitoring = () => {
     queryFn: () =>
       invoicesAPI.getAll({
         all: true,
-        year: searched?.year,
+        periode_year: searched?.year,
         project_group_id: filter?.kind === 'group' ? filter.id : undefined,
         project_id: filter?.kind === 'project' ? filter.id : undefined,
       }),
@@ -101,6 +102,7 @@ const InvoiceMonitoring = () => {
   const exportExcel = async (filename: string) => {
     const data: ExportLine[] = lines.map((l: MonitoringLine) => ({
       bulan: l.bulan,
+      outsideYear: l.outsideYear,
       noInvoice: l.invoice?.no_invoice ?? '-',
       periode: l.periodeText,
       mismatch: l.periodeMismatch,
@@ -111,6 +113,7 @@ const InvoiceMonitoring = () => {
     }));
     const totalLine = (bulan: string, nilai: number): ExportLine => ({
       bulan,
+      outsideYear: false,
       noInvoice: '',
       periode: '',
       mismatch: false,
@@ -125,7 +128,7 @@ const InvoiceMonitoring = () => {
       totalLine('Total Belum Dibayar', unpaid),
     );
 
-    const columns: ExportColumn<ExportLine>[] = [
+    const baseColumns: ExportColumn<ExportLine>[] = [
       { header: 'Bulan', key: 'bulan', width: 22 },
       { header: 'No. Invoice', key: 'noInvoice', width: 22 },
       {
@@ -143,8 +146,9 @@ const InvoiceMonitoring = () => {
         numFmt: RUPIAH_FORMAT,
         fontColorWhen: (l) => (l.bulan === 'Total Belum Dibayar' && l.nilai ? RED_ARGB : undefined),
       },
-{ header: 'Status Tagihan', key: 'status', width: 16 },
+      { header: 'Status Tagihan', key: 'status', width: 16 },
     ];
+    const columns = baseColumns.map((c) => ({ ...c, italicWhen: (l: ExportLine) => l.outsideYear }));
     await exportToExcel(data, columns, filename, `Monitoring ${reportYear}`, { boldLastRows: 3 });
   };
 
@@ -209,7 +213,8 @@ const InvoiceMonitoring = () => {
               <div>
                 <h2 className="text-sm font-semibold text-slate-900">Rincian per Bulan</h2>
                 <p className="text-xs text-slate-500 mt-0.5">
-                  Invoice ditempatkan pada bulan tanggal tagihannya.{' '}
+                  Tahun mengikuti periode tagihan. Invoice ditempatkan pada bulan tanggal tagihannya;{' '}
+                  <span className="italic">baris miring</span> berarti ditagih di luar tahun itu.{' '}
                   <span className="text-red-600">Periode merah</span> berarti periode tagihan tidak
                   sama dengan bulan tagihnya.
                 </p>
@@ -238,7 +243,7 @@ const InvoiceMonitoring = () => {
               <div className="overflow-x-auto">
                 {invoiceCount === 0 && (
                   <div className="text-center pb-4 text-slate-500">
-                    Belum ada invoice pada tahun {reportYear}
+                    Belum ada invoice dengan periode tagihan tahun {reportYear}
                     {filter ? ' untuk pilihan ini' : ''}.
                   </div>
                 )}
@@ -258,7 +263,7 @@ const InvoiceMonitoring = () => {
                     {lines.map((line) => {
                       const inv = line.invoice;
                       return (
-                        <TableRow key={line.key}>
+                        <TableRow key={line.key} className={line.outsideYear ? 'italic' : undefined}>
                           <TableCell className="font-medium whitespace-nowrap">{line.bulan}</TableCell>
                           <TableCell className="whitespace-nowrap">
                             {inv ? (
