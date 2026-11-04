@@ -119,8 +119,8 @@ export interface CostOperation {
   updated_at: ISODateString;
 }
 
-/** Submit = billed, Clearing = paid (tgl_bayar required). */
-export type InvoiceStatus = 'Submit' | 'Clearing';
+/** Submit = billed, Kliring = paid (tgl_bayar required). */
+export type InvoiceStatus = 'Submit' | 'Kliring';
 
 /** Mirrors `models.Invoice`. `manajemen_fee` is a fixed amount typed in by the user. */
 export interface Invoice {
@@ -157,7 +157,7 @@ export interface ProjectSummary {
   absorption_pct: number;
   absorption_alert: boolean;
   total_invoice: number;
-  total_clearing: number;
+  total_kliring: number;
   total_outstanding: number;
   total_manajemen_fee: number;
   profit_margin: number;

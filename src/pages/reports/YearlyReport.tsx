@@ -1,8 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { reportsAPI, projectsAPI } from '@/api/endpoints';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import Select from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import {
@@ -24,10 +23,13 @@ import {
   Legend,
   ResponsiveContainer,
 } from 'recharts';
-import { ShieldAlert } from 'lucide-react';
+import { Download, Settings, ShieldAlert } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { formatRupiah, formatRupiahShort } from '@/utils/formatters';
-import ProjectContractBadge from '@/components/projects/ProjectContractBadge';
+import { exportToExcel, type ExportColumn } from '@/utils/exportUtils';
+import ColumnSettingsDialog from '@/components/dialogs/operationals/ColumnSettingsDialog';
+import ExportFilenameDialog from '@/components/dialogs/operationals/ExportFilenameDialog';
+import type { MonthlyReportTotals } from '@/types';
 
 const MONTH_NAMES = [
   'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
@@ -35,6 +37,38 @@ const MONTH_NAMES = [
 ];
 
 type ChartMode = 'separate' | 'combined';
+
+type ValueKey = keyof MonthlyReportTotals;
+
+/** Columns of the Rincian per Bulan table, in display order. Bulan is always shown. */
+const DETAIL_COLUMNS: { key: ValueKey; label: string }[] = [
+  { key: 'pengeluaran', label: 'Pengeluaran Proyek' },
+  { key: 'operasional', label: 'Beban Operasional' },
+  { key: 'total_pengeluaran', label: 'Total Pengeluaran' },
+  { key: 'tagihan', label: 'Tagihan' },
+  { key: 'penerimaan', label: 'Penerimaan' },
+  { key: 'manajemen_fee', label: 'Manajemen Fee' },
+  { key: 'selisih', label: 'Selisih' },
+];
+
+const ALL_COLUMN_KEYS = DETAIL_COLUMNS.map((c) => c.key);
+const COLUMNS_STORAGE_KEY = 'yearly_report_columns';
+
+/** Reads the saved column choice; anything missing or invalid falls back to all columns. */
+const loadVisibleColumns = (): ValueKey[] => {
+  try {
+    const saved: unknown = JSON.parse(localStorage.getItem(COLUMNS_STORAGE_KEY) ?? 'null');
+    if (Array.isArray(saved)) {
+      const valid = ALL_COLUMN_KEYS.filter((k) => saved.includes(k));
+      if (valid.length > 0) return valid;
+    }
+  } catch {
+    // fall through to the default
+  }
+  return ALL_COLUMN_KEYS;
+};
+
+const RUPIAH_FORMAT = '"Rp" #,##0;[Red]-"Rp" #,##0';
 
 const currentYear = new Date().getFullYear();
 const yearOptions = Array.from({ length: 7 }, (_, i) => {
@@ -47,10 +81,23 @@ const yearOptions = Array.from({ length: 7 }, (_, i) => {
  * return 403 to anyone else. This page renders the server's figures as-is and
  * does not recompute any total or margin client-side.
  */
-const MonthlyReport = () => {
+const YearlyReport = () => {
   const [year, setYear] = useState(currentYear);
   const [projectId, setProjectId] = useState('');
   const [chartMode, setChartMode] = useState<ChartMode>('separate');
+  const [visibleColumns, setVisibleColumns] = useState<ValueKey[]>(loadVisibleColumns);
+  const [showColumnSettings, setShowColumnSettings] = useState(false);
+  const [showExport, setShowExport] = useState(false);
+
+  useEffect(() => {
+    localStorage.setItem(COLUMNS_STORAGE_KEY, JSON.stringify(visibleColumns));
+  }, [visibleColumns]);
+
+  // The table and the export both read this one list, so they cannot differ.
+  const shownColumns = useMemo(
+    () => DETAIL_COLUMNS.filter((c) => visibleColumns.includes(c.key)),
+    [visibleColumns],
+  );
 
   const { data: projects } = useQuery({
     queryKey: ['projects-all'],
@@ -71,32 +118,37 @@ const MonthlyReport = () => {
     enabled: !projectId,
   });
 
-  const { data: summaries, isLoading: summaryLoading } = useQuery({
-    queryKey: ['reports', 'projects-summary'],
-    queryFn: () => reportsAPI.getProjectsSummary({ all: true }),
-    select: (res) => res.data?.projects_summary ?? [],
-  });
-
   const projectOptions = (projects ?? []).map((p) => ({ value: p.id, label: p.judul_pekerjaan }));
   const totals = monthly?.totals;
 
-  const totalCards = [
-    { label: 'Pengeluaran Proyek', value: totals?.pengeluaran },
-    { label: 'Beban Operasional', value: totals?.operasional },
-    { label: 'Total Pengeluaran', value: totals?.total_pengeluaran },
-    { label: 'Tagihan', value: totals?.tagihan },
-    { label: 'Penerimaan', value: totals?.penerimaan },
-    { label: 'Manajemen Fee', value: totals?.manajemen_fee },
-    { label: 'Selisih (Penerimaan − Total Pengeluaran)', value: totals?.selisih },
-  ];
+  const exportDetail = async (filename: string) => {
+    const rows = monthly?.rows ?? [];
+    if (rows.length === 0 || !totals) throw new Error('Tidak ada data untuk diekspor');
+
+    type Line = { bulan: string } & Partial<Record<ValueKey, number>>;
+    const lines: Line[] = rows.map((r, i) => ({ bulan: MONTH_NAMES[i], ...r }));
+    lines.push({ bulan: 'Total', ...totals });
+
+    const columns: ExportColumn<Line>[] = [
+      { header: 'Bulan', key: 'bulan', width: 16 },
+      ...shownColumns.map((c) => ({
+        header: c.label,
+        key: c.key,
+        width: 22,
+        accessor: (line: Line) => line[c.key] ?? 0,
+        numFmt: RUPIAH_FORMAT,
+      })),
+    ];
+    await exportToExcel(lines, columns, filename, `Laporan ${year}`, { boldLastRow: true });
+  };
 
   return (
     <div className="p-4 md:p-8 bg-gradient-to-br from-slate-50 to-slate-100 min-h-screen">
       <div className="max-w-7xl mx-auto space-y-6">
         <div>
-          <h1 className="text-2xl font-semibold text-slate-900">Laporan Bulanan</h1>
+          <h1 className="text-2xl font-semibold text-slate-900">Laporan Tahunan</h1>
           <p className="text-slate-500 mt-1">
-            Pengeluaran dan penerimaan pembayaran per bulan, serta sisa anggaran dan margin per proyek
+            Pengeluaran (proyek dan operasional) dan penerimaan pembayaran per bulan
           </p>
         </div>
 
@@ -112,7 +164,7 @@ const MonthlyReport = () => {
                   Laporan ini hanya terlihat oleh administrator. Pengeluaran Proyek dihitung dari Transaksi
                   per bulan transaksi; Beban Operasional dari pengeluaran di luar proyek. Filter Proyek
                   hanya menampilkan Pengeluaran Proyek, sehingga Beban Operasional tidak ikut dihitung. Tagihan dihitung dari Invoice per bulan tagihan. Penerimaan dan
-                  manajemen fee dihitung dari Invoice berstatus Clearing per bulan bayar. Server
+                  manajemen fee dihitung dari Invoice berstatus Kliring per bulan bayar. Server
                   menghitung semua angka.
                 </p>
               </div>
@@ -146,19 +198,6 @@ const MonthlyReport = () => {
             </div>
           </CardContent>
         </Card>
-
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
-          {totalCards.map((c) => (
-            <Card key={c.label} className="border-none shadow-md">
-              <CardContent className="pt-6">
-                <p className="text-xs text-slate-500">{c.label}</p>
-                <p className="text-lg font-semibold text-slate-900 mt-1">
-                  {c.value === undefined ? '-' : formatRupiah(c.value)}
-                </p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
 
         <Card className="border-none shadow-lg">
           <CardHeader className="border-b border-slate-100">
@@ -194,8 +233,13 @@ const MonthlyReport = () => {
                   <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
                   <XAxis dataKey="label" tick={{ fontSize: 12 }} />
                   <YAxis tickFormatter={(v) => formatRupiahShort(v)} tick={{ fontSize: 11 }} width={70} />
-                  <Tooltip formatter={(value: number) => formatRupiah(value)} />
-                  <Legend />
+                  <Tooltip
+                    formatter={(value: number) => formatRupiah(value)}
+                    contentStyle={{ fontSize: 11, padding: '6px 8px', borderRadius: 6 }}
+                    labelStyle={{ fontSize: 11, fontWeight: 600, marginBottom: 2 }}
+                    itemStyle={{ fontSize: 11, paddingTop: 1, paddingBottom: 1 }}
+                  />
+                  <Legend wrapperStyle={{ fontSize: 11 }} iconSize={10} />
                   {chartMode === 'separate' ? (
                     <>
                       <Bar dataKey="pengeluaran" name="Pengeluaran Proyek" stackId="biaya" fill="#dc2626" />
@@ -224,7 +268,32 @@ const MonthlyReport = () => {
 
         <Card className="border-none shadow-lg">
           <CardHeader className="border-b border-slate-100">
-            <h2 className="text-sm font-semibold text-slate-900">Rincian per Bulan</h2>
+            <div className="flex items-center justify-between gap-2">
+              <h2 className="text-sm font-semibold text-slate-900">Rincian per Bulan</h2>
+              <div className="flex items-center gap-1">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  aria-label="Atur kolom"
+                  title="Atur kolom"
+                  onClick={() => setShowColumnSettings(true)}
+                >
+                  <Settings className="w-4 h-4" />
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  aria-label="Export"
+                  title="Export"
+                  disabled={monthlyLoading || !totals}
+                  onClick={() => setShowExport(true)}
+                >
+                  <Download className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
           </CardHeader>
           <CardContent className="pt-6">
             {monthlyLoading ? (
@@ -235,28 +304,25 @@ const MonthlyReport = () => {
                   <TableHeader>
                     <TableRow>
                       <TableHead>Bulan</TableHead>
-                      <TableHead className="text-right">Pengeluaran Proyek</TableHead>
-                      <TableHead className="text-right">Beban Operasional</TableHead>
-                      <TableHead className="text-right">Total Pengeluaran</TableHead>
-                      <TableHead className="text-right">Tagihan</TableHead>
-                      <TableHead className="text-right">Penerimaan</TableHead>
-                      <TableHead className="text-right">Manajemen Fee</TableHead>
-                      <TableHead className="text-right">Selisih</TableHead>
+                      {shownColumns.map((c) => (
+                        <TableHead key={c.key} className="text-right">
+                          {c.label}
+                        </TableHead>
+                      ))}
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {monthly?.rows.map((row, i) => (
                       <TableRow key={row.month}>
                         <TableCell className="font-medium">{MONTH_NAMES[i]}</TableCell>
-                        <TableCell className="text-right">{formatRupiah(row.pengeluaran)}</TableCell>
-                        <TableCell className="text-right">{formatRupiah(row.operasional)}</TableCell>
-                        <TableCell className="text-right">{formatRupiah(row.total_pengeluaran)}</TableCell>
-                        <TableCell className="text-right">{formatRupiah(row.tagihan)}</TableCell>
-                        <TableCell className="text-right">{formatRupiah(row.penerimaan)}</TableCell>
-                        <TableCell className="text-right">{formatRupiah(row.manajemen_fee)}</TableCell>
-                        <TableCell className={`text-right ${row.selisih < 0 ? 'text-red-600' : ''}`}>
-                          {formatRupiah(row.selisih)}
-                        </TableCell>
+                        {shownColumns.map((c) => (
+                          <TableCell
+                            key={c.key}
+                            className={`text-right whitespace-nowrap ${c.key === 'selisih' && row.selisih < 0 ? 'text-red-600' : ''}`}
+                          >
+                            {formatRupiah(row[c.key])}
+                          </TableCell>
+                        ))}
                       </TableRow>
                     ))}
                   </TableBody>
@@ -264,13 +330,14 @@ const MonthlyReport = () => {
                     <TableFooter>
                       <TableRow>
                         <TableCell className="font-semibold">Total</TableCell>
-                        <TableCell className="text-right font-semibold">{formatRupiah(totals.pengeluaran)}</TableCell>
-                        <TableCell className="text-right font-semibold">{formatRupiah(totals.operasional)}</TableCell>
-                        <TableCell className="text-right font-semibold">{formatRupiah(totals.total_pengeluaran)}</TableCell>
-                        <TableCell className="text-right font-semibold">{formatRupiah(totals.tagihan)}</TableCell>
-                        <TableCell className="text-right font-semibold">{formatRupiah(totals.penerimaan)}</TableCell>
-                        <TableCell className="text-right font-semibold">{formatRupiah(totals.manajemen_fee)}</TableCell>
-                        <TableCell className="text-right font-semibold">{formatRupiah(totals.selisih)}</TableCell>
+                        {shownColumns.map((c) => (
+                          <TableCell
+                            key={c.key}
+                            className={`text-right font-semibold whitespace-nowrap ${c.key === 'selisih' && totals.selisih < 0 ? 'text-red-600' : ''}`}
+                          >
+                            {formatRupiah(totals[c.key])}
+                          </TableCell>
+                        ))}
                       </TableRow>
                     </TableFooter>
                   )}
@@ -302,14 +369,14 @@ const MonthlyReport = () => {
                     {operationalSummary?.rows.map((r) => (
                       <TableRow key={r.operational_cost_type_id}>
                         <TableCell className="font-medium">{r.nama_biaya}</TableCell>
-                        <TableCell className="text-right">{formatRupiah(r.total)}</TableCell>
+                        <TableCell className="text-right whitespace-nowrap">{formatRupiah(r.total)}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
                   <TableFooter>
                     <TableRow>
                       <TableCell className="font-semibold">Total</TableCell>
-                      <TableCell className="text-right font-semibold">
+                      <TableCell className="text-right font-semibold whitespace-nowrap">
                         {formatRupiah(operationalSummary?.total ?? 0)}
                       </TableCell>
                     </TableRow>
@@ -319,70 +386,27 @@ const MonthlyReport = () => {
             </CardContent>
           </Card>
         )}
-
-        <Card className="border-none shadow-lg">
-          <CardHeader className="border-b border-slate-100">
-            <h2 className="text-sm font-semibold text-slate-900">Ringkasan Proyek</h2>
-          </CardHeader>
-          <CardContent className="pt-6">
-            {summaryLoading ? (
-              <div className="text-center py-8">Memuat...</div>
-            ) : (summaries?.length ?? 0) === 0 ? (
-              <div className="text-center py-8 text-slate-500">Belum ada proyek.</div>
-            ) : (
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>No. SP2K</TableHead>
-                      <TableHead>Proyek</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead className="text-right">Nilai Pekerjaan</TableHead>
-                      <TableHead className="text-right">Realisasi</TableHead>
-                      <TableHead className="text-right">Sisa Anggaran</TableHead>
-                      <TableHead className="text-right">Absorpsi</TableHead>
-                      <TableHead className="text-right">Total Invoice</TableHead>
-                      <TableHead className="text-right">Penerimaan</TableHead>
-                      <TableHead className="text-right">Profit Margin</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {summaries?.map((s) => (
-                      <TableRow key={s.project_id}>
-                        <TableCell>{s.no_sp2k}</TableCell>
-                        <TableCell className="font-medium">{s.judul_pekerjaan}</TableCell>
-                        <TableCell>
-                          <ProjectContractBadge
-                            project={{ contract_status: s.contract_status, ending_soon: false, days_remaining: 0 }}
-                          />
-                        </TableCell>
-                        <TableCell className="text-right">{formatRupiah(s.nilai_pekerjaan)}</TableCell>
-                        <TableCell className="text-right">{formatRupiah(s.total_realisasi)}</TableCell>
-                        <TableCell className="text-right">{formatRupiah(s.remaining_budget)}</TableCell>
-                        <TableCell className="text-right">
-                          <span className="inline-flex items-center gap-2">
-                            {s.absorption_pct.toFixed(1)}%
-                            {s.absorption_alert && (
-                              <Badge variant="outline" className="bg-red-100 text-red-800 border-red-200">
-                                &gt; 80%
-                              </Badge>
-                            )}
-                          </span>
-                        </TableCell>
-                        <TableCell className="text-right">{formatRupiah(s.total_invoice)}</TableCell>
-                        <TableCell className="text-right">{formatRupiah(s.total_clearing)}</TableCell>
-                        <TableCell className="text-right">{formatRupiah(s.profit_margin)}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            )}
-          </CardContent>
-        </Card>
       </div>
+
+      <ColumnSettingsDialog
+        isOpen={showColumnSettings}
+        onClose={() => setShowColumnSettings(false)}
+        columns={DETAIL_COLUMNS}
+        selected={visibleColumns}
+        onSave={(keys) => {
+          setVisibleColumns(keys as ValueKey[]);
+          setShowColumnSettings(false);
+        }}
+      />
+
+      <ExportFilenameDialog
+        isOpen={showExport}
+        onClose={() => setShowExport(false)}
+        defaultFilename={`Laporan-Tahunan-${year}`}
+        onExport={exportDetail}
+      />
     </div>
   );
 };
 
-export default MonthlyReport;
+export default YearlyReport;

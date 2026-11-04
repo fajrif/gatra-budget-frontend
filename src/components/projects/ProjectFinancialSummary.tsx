@@ -36,7 +36,7 @@ const ProjectFinancialSummary = ({ projectId }: ProjectFinancialSummaryProps) =>
     {
       label: 'Total Invoice',
       value: formatRupiah(summary.total_invoice),
-      hint: `${formatRupiah(summary.total_clearing)} sudah dibayar`,
+      hint: `${formatRupiah(summary.total_kliring)} sudah dibayar`,
     },
     {
       label: 'Profit Margin',

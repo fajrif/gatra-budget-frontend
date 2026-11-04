@@ -69,7 +69,7 @@ const navigationReportsGroup: NavGroup = {
   key: 'reports',
   roles: ['admin', 'user'],
   children: [
-    { title: 'Laporan Bulanan', url: '/reports/monthly', icon: Wallet, roles: ['admin'] },
+    { title: 'Laporan Tahunan', url: '/reports/yearly', icon: Wallet, roles: ['admin'] },
   ],
 };
 

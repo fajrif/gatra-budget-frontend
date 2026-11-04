@@ -152,7 +152,7 @@ const Transactions = () => {
           <p className="text-sm text-slate-700 mb-3">
             Seluruh pengeluaran. Tab Proyek berisi pengeluaran yang dibebankan ke proyek; tab Beban
             Operasional berisi pengeluaran di luar proyek (biaya kantor, konsumsi, dan sejenisnya).
-            Total pengeluaran per bulan dapat dilihat di Laporan Bulanan.
+            Total pengeluaran per bulan dapat dilihat di Laporan Tahunan.
           </p>
           <div className="space-y-1 text-sm text-slate-600">
             <p>
@@ -162,7 +162,7 @@ const Transactions = () => {
               • <strong className="font-semibold">Jenis Biaya:</strong> kategori pengeluaran, referensi ke data master
             </p>
             <p>
-              • <strong className="font-semibold">Tanggal Transaksi:</strong> tanggal pengeluaran; menentukan bulan pada laporan bulanan
+              • <strong className="font-semibold">Tanggal Transaksi:</strong> tanggal pengeluaran; menentukan bulan pada laporan tahunan
             </p>
             <p>
               • <strong className="font-semibold">Jumlah Realisasi:</strong> nominal pengeluaran, harus lebih dari Rp 100.000

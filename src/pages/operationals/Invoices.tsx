@@ -81,7 +81,7 @@ const Invoices = () => {
         </div>
         <AboutCard icon={FileText} title="Tentang Invoice" storageKey="invoice_card">
           <p className="text-sm text-slate-700 mb-3">
-            Seluruh tagihan proyek. Penerimaan pembayaran per bulan dapat dilihat di Laporan Bulanan.
+            Seluruh tagihan proyek. Penerimaan pembayaran per bulan dapat dilihat di Laporan Tahunan.
           </p>
           <div className="space-y-1 text-sm text-slate-600">
             <p>
@@ -97,10 +97,10 @@ const Invoices = () => {
               • <strong className="font-semibold">Tanggal Tagihan:</strong> tanggal tagihan diterbitkan
             </p>
             <p>
-              • <strong className="font-semibold">Status:</strong> Submit = sudah ditagihkan; Clearing = sudah dibayar
+              • <strong className="font-semibold">Status:</strong> Submit = sudah ditagihkan; Kliring = sudah dibayar
             </p>
             <p>
-              • <strong className="font-semibold">Tanggal Bayar:</strong> tanggal pembayaran diterima; wajib diisi saat status Clearing, kosong saat Submit
+              • <strong className="font-semibold">Tanggal Bayar:</strong> tanggal pembayaran diterima; wajib diisi saat status Kliring, kosong saat Submit
             </p>
             <p>
               • <strong className="font-semibold">Nilai:</strong> nominal tagihan

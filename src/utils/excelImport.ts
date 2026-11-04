@@ -94,15 +94,15 @@ const TEMPLATES: Record<ImportKind, TemplateDefinition> = {
       { key: 'no_invoice', label: 'No Invoice', required: true, type: 'text', width: 20, note: 'unik; bila sudah ada, invoice tsb diperbarui', example: 'INV-001' },
       { key: 'nama_invoice', label: 'Nama Invoice', required: true, type: 'text', width: 36, note: 'judul tagihan', example: 'Termin 1' },
       { key: 'tgl_tagihan', label: 'Tanggal Tagihan', required: true, type: 'date', width: 16, note: DATE_NOTE, example: '2026-10-01' },
-      { key: 'status', label: 'Status', required: true, type: 'text', width: 14, note: 'Submit (belum dibayar) atau Clearing (sudah dibayar)', example: 'Clearing' },
-      { key: 'tgl_bayar', label: 'Tanggal Bayar', required: false, type: 'date', width: 16, note: `${DATE_NOTE}; wajib bila Clearing, kosong bila Submit, harus setelah Tanggal Tagihan`, example: '2026-10-20' },
+      { key: 'status', label: 'Status', required: true, type: 'text', width: 14, note: 'Submit (belum dibayar) atau Kliring (sudah dibayar)', example: 'Kliring' },
+      { key: 'tgl_bayar', label: 'Tanggal Bayar', required: false, type: 'date', width: 16, note: `${DATE_NOTE}; wajib bila Kliring, kosong bila Submit, harus setelah Tanggal Tagihan`, example: '2026-10-20' },
       { key: 'nilai', label: 'Nilai', required: true, type: 'number', width: 20, note: 'angka, harus lebih dari 0', example: 100000000 },
       { key: 'manajemen_fee', label: 'Manajemen Fee', required: false, type: 'number', width: 20, note: 'angka tetap; kosong = 0; tidak boleh melebihi Nilai', example: 5000000 },
       { key: 'description', label: 'Deskripsi', required: false, type: 'text', width: 40, note: 'opsional', example: '' },
     ],
     rules: [
       'No SP2K harus sudah ada di sistem (import Proyek terlebih dahulu).',
-      'Status Clearing wajib punya Tanggal Bayar; status Submit tidak boleh punya Tanggal Bayar.',
+      'Status Kliring wajib punya Tanggal Bayar; status Submit tidak boleh punya Tanggal Bayar.',
       'Tanggal Bayar harus setelah Tanggal Tagihan.',
       'Manajemen Fee tidak boleh negatif dan tidak boleh melebihi Nilai.',
       'No Invoice tidak boleh sama dengan baris lain di file ini.',
@@ -186,7 +186,7 @@ export const downloadImportTemplate = async (kind: ImportKind): Promise<void> =>
 
   // Dropdowns for fixed or master-data values.
   const dropdowns: Record<string, string> = {};
-  if (kind === 'invoices') dropdowns.status = '"Submit,Clearing"';
+  if (kind === 'invoices') dropdowns.status = '"Submit,Kliring"';
 
   references.forEach((list, listIndex) => {
     reference.getCell(1, listIndex + 1).value = list.heading;

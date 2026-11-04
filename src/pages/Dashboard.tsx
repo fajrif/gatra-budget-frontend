@@ -51,7 +51,7 @@ const Dashboard = () => (
             <li><strong className="font-semibold">Proyek:</strong> kelola proyek, nilai pekerjaan, dan periode kontrak (Belum mulai, Berjalan, Habis Kontrak)</li>
             <li><strong className="font-semibold">Transaksi:</strong> catat pengeluaran proyek dan beban operasional (di luar proyek)</li>
             <li><strong className="font-semibold">Invoice:</strong> catat seluruh tagihan dan penerimaan pembayarannya</li>
-            <li><strong className="font-semibold">Laporan Bulanan:</strong> pengeluaran (proyek dan operasional) dan penerimaan per bulan, serta sisa anggaran dan margin per proyek (admin)</li>
+            <li><strong className="font-semibold">Laporan Tahunan:</strong> pengeluaran (proyek dan operasional) dan penerimaan per bulan dalam satu tahun (admin)</li>
           </ul>
         </div>
       </AboutCard>

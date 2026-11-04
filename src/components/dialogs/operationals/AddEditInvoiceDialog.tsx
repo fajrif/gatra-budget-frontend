@@ -37,7 +37,7 @@ export interface AddEditInvoiceDialogProps {
 
 const statusOptions = [
   { value: 'Submit', label: 'Submit' },
-  { value: 'Clearing', label: 'Clearing (sudah dibayar)' },
+  { value: 'Kliring', label: 'Kliring (sudah dibayar)' },
 ];
 
 const toFormValues = (projectId: UUID | undefined, item?: Invoice): InvoiceFormValues => ({
@@ -97,7 +97,7 @@ const AddEditInvoiceDialog = ({
     mutationFn: (data: InvoiceFormValues) => {
       const payload = {
         ...data,
-        tgl_bayar: data.status === 'Clearing' ? data.tgl_bayar || undefined : undefined,
+        tgl_bayar: data.status === 'Kliring' ? data.tgl_bayar || undefined : undefined,
         description: data.description || undefined,
       };
       return editingItem?.id
@@ -201,7 +201,7 @@ const AddEditInvoiceDialog = ({
               <Input
                 type="date"
                 {...register('tgl_bayar')}
-                disabled={status !== 'Clearing'}
+                disabled={status !== 'Kliring'}
                 className="mt-1"
               />
               {errors.tgl_bayar && (

@@ -8,7 +8,7 @@ export { defaultColDef } from '@/config/defaultColDef';
 
 export const invoiceStatusBadgeClasses: Record<string, { bg: string; text: string; border: string }> = {
   Submit: { bg: 'bg-amber-100', text: 'text-amber-800', border: 'border-amber-200' },
-  Clearing: { bg: 'bg-green-100', text: 'text-green-800', border: 'border-green-200' },
+  Kliring: { bg: 'bg-green-100', text: 'text-green-800', border: 'border-green-200' },
 };
 
 export const createInvoicesColumnDefs = ({

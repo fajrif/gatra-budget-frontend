@@ -7,13 +7,13 @@ export const invoiceSchema = z
     nama_invoice: z.string().min(1, 'Nama invoice wajib diisi'),
     tgl_tagihan: z.string().min(1, 'Tanggal tagihan wajib diisi'),
     tgl_bayar: z.string().optional().or(z.literal('')),
-    status: z.enum(['Submit', 'Clearing']),
+    status: z.enum(['Submit', 'Kliring']),
     nilai: z.number().positive('Nilai wajib diisi dan harus lebih besar dari 0'),
     description: z.string().optional(),
     manajemen_fee: z.number().min(0, 'Manajemen fee tidak boleh negatif'),
   })
-  .refine((data) => data.status !== 'Clearing' || !!data.tgl_bayar, {
-    message: 'Tanggal bayar wajib diisi untuk status Clearing',
+  .refine((data) => data.status !== 'Kliring' || !!data.tgl_bayar, {
+    message: 'Tanggal bayar wajib diisi untuk status Kliring',
     path: ['tgl_bayar'],
   })
   .refine((data) => !data.tgl_bayar || data.tgl_bayar > data.tgl_tagihan, {

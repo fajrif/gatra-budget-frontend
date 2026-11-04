@@ -17,7 +17,7 @@ export interface InvoicesPanelProps {
 
 const statusClasses: Record<string, string> = {
   Submit: 'bg-amber-100 text-amber-800 border-amber-200',
-  Clearing: 'bg-green-100 text-green-800 border-green-200',
+  Kliring: 'bg-green-100 text-green-800 border-green-200',
 };
 
 const InvoicesPanel = ({ projectId }: InvoicesPanelProps) => {

@@ -33,7 +33,7 @@ import UserAddresses from '@/pages/operationals/UserAddresses';
 
 // Reports
 import ReportSample from '@/pages/reports/ReportSample';
-import MonthlyReport from '@/pages/reports/MonthlyReport';
+import YearlyReport from '@/pages/reports/YearlyReport';
 
 // Layout
 import Layout from '@/components/Layout';
@@ -262,13 +262,14 @@ function App() {
                 }
               />
 
-              {/* Monthly report — admin only (remaining budget and margin) */}
+              {/* Yearly report — admin only */}
+              <Route path="/reports/monthly" element={<Navigate to="/reports/yearly" replace />} />
               <Route
-                path="/reports/monthly"
+                path="/reports/yearly"
                 element={
                   <ProtectedRoute adminOnly>
                     <Layout>
-                      <MonthlyReport />
+                      <YearlyReport />
                     </Layout>
                   </ProtectedRoute>
                 }

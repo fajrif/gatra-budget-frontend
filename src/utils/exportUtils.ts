@@ -50,6 +50,13 @@ export interface ExportColumn<T = unknown> {
   key: string;
   width?: number;
   accessor?: (item: T) => unknown;
+  /** Excel number format applied to the column's data cells, e.g. '"Rp" #,##0'. */
+  numFmt?: string;
+}
+
+export interface ExportExcelOptions {
+  /** Bold the last data row, e.g. a totals row appended to the data. */
+  boldLastRow?: boolean;
 }
 
 export const exportToExcel = async <T extends Record<string, unknown> | object>(
@@ -57,6 +64,7 @@ export const exportToExcel = async <T extends Record<string, unknown> | object>(
   columns: ExportColumn<T>[],
   filename: string,
   sheetName = 'Data',
+  options: ExportExcelOptions = {},
 ): Promise<void> => {
   if (!data || data.length === 0) {
     throw new Error('Tidak ada data untuk diekspor');
@@ -86,6 +94,17 @@ export const exportToExcel = async <T extends Record<string, unknown> | object>(
     });
     worksheet.addRow(rowData);
   });
+
+  columns.forEach((col, index) => {
+    if (!col.numFmt) return;
+    worksheet.getColumn(index + 1).eachCell({ includeEmpty: false }, (cell, rowNumber) => {
+      if (rowNumber > 1) cell.numFmt = col.numFmt as string;
+    });
+  });
+
+  if (options.boldLastRow) {
+    worksheet.getRow(worksheet.rowCount).font = { bold: true };
+  }
 
   const buffer = await workbook.xlsx.writeBuffer();
   const blob = new Blob([buffer], {
