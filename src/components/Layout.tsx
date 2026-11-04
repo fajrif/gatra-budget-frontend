@@ -19,6 +19,7 @@ import {
   Briefcase,
   CreditCard,
   Layers,
+  ClipboardList,
   type LucideIcon,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -72,6 +73,7 @@ const navigationReportsGroup: NavGroup = {
   roles: ['admin', 'user'],
   children: [
     { title: 'Laporan Tahunan', url: '/reports/yearly', icon: Wallet, roles: ['admin'] },
+    { title: 'Monitoring Invoice', url: '/reports/invoice-monitoring', icon: ClipboardList, roles: ['admin', 'user'] },
   ],
 };
 

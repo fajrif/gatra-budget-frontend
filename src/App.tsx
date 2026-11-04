@@ -35,6 +35,7 @@ import UserAddresses from '@/pages/operationals/UserAddresses';
 // Reports
 import ReportSample from '@/pages/reports/ReportSample';
 import YearlyReport from '@/pages/reports/YearlyReport';
+import InvoiceMonitoring from '@/pages/reports/InvoiceMonitoring';
 
 // Layout
 import Layout from '@/components/Layout';
@@ -282,6 +283,18 @@ function App() {
                   <ProtectedRoute adminOnly>
                     <Layout>
                       <YearlyReport />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+
+              {/* Invoice monitoring — any signed-in user (no fee/margin figures) */}
+              <Route
+                path="/reports/invoice-monitoring"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <InvoiceMonitoring />
                     </Layout>
                   </ProtectedRoute>
                 }

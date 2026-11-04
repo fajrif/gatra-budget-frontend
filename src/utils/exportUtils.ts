@@ -52,11 +52,15 @@ export interface ExportColumn<T = unknown> {
   accessor?: (item: T) => unknown;
   /** Excel number format applied to the column's data cells, e.g. '"Rp" #,##0'. */
   numFmt?: string;
+  /** Returns an ARGB colour (e.g. 'FFDC2626') to paint the cell's text, or undefined for none. */
+  fontColorWhen?: (item: T) => string | undefined;
 }
 
 export interface ExportExcelOptions {
   /** Bold the last data row, e.g. a totals row appended to the data. */
   boldLastRow?: boolean;
+  /** Bold the last N data rows (several totals rows). Wins over boldLastRow. */
+  boldLastRows?: number;
 }
 
 export const exportToExcel = async <T extends Record<string, unknown> | object>(
@@ -92,7 +96,11 @@ export const exportToExcel = async <T extends Record<string, unknown> | object>(
       const value = col.accessor ? col.accessor(item) : (item as Record<string, unknown>)[col.key];
       rowData[col.key] = value ?? '';
     });
-    worksheet.addRow(rowData);
+    const row = worksheet.addRow(rowData);
+    columns.forEach((col, index) => {
+      const color = col.fontColorWhen?.(item);
+      if (color) row.getCell(index + 1).font = { color: { argb: color } };
+    });
   });
 
   columns.forEach((col, index) => {
@@ -102,8 +110,12 @@ export const exportToExcel = async <T extends Record<string, unknown> | object>(
     });
   });
 
-  if (options.boldLastRow) {
-    worksheet.getRow(worksheet.rowCount).font = { bold: true };
+  const boldRows = options.boldLastRows ?? (options.boldLastRow ? 1 : 0);
+  for (let i = 0; i < boldRows; i++) {
+    // Per cell, so a colour set by fontColorWhen survives.
+    worksheet.getRow(worksheet.rowCount - i).eachCell({ includeEmpty: true }, (cell) => {
+      cell.font = { ...cell.font, bold: true };
+    });
   }
 
   const buffer = await workbook.xlsx.writeBuffer();

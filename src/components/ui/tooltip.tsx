@@ -1,14 +1,17 @@
 import React, { useState, useRef, useEffect, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
+import { cn } from '@/lib/utils';
 
 export interface TooltipProps {
   /** The trigger element; the tooltip follows it on hover. */
   children: ReactNode;
   /** Tooltip copy. */
   content: ReactNode;
+  /** Extra classes for the wrapper, e.g. `justify-start` to left-align the trigger. */
+  className?: string;
 }
 
-const Tooltip = ({ children, content }: TooltipProps) => {
+const Tooltip = ({ children, content, className }: TooltipProps) => {
   const [show, setShow] = useState(false);
   const [position, setPosition] = useState({ top: 0, left: 0 });
   const triggerRef = useRef<HTMLDivElement>(null);
@@ -41,7 +44,7 @@ const Tooltip = ({ children, content }: TooltipProps) => {
     <>
       <div
         ref={triggerRef}
-        className="relative group flex items-center justify-center w-full"
+        className={cn('relative group flex items-center justify-center w-full', className)}
         onMouseEnter={() => setShow(true)}
         onMouseLeave={() => setShow(false)}
       >

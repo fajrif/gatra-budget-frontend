@@ -234,7 +234,13 @@ export interface InvoicePayload {
 
 export const invoicesAPI = {
   getAll: (
-    params?: ListParams & { project_id?: string; status?: InvoiceStatus; month?: string },
+    params?: ListParams & {
+      project_id?: string;
+      project_group_id?: string;
+      status?: InvoiceStatus;
+      month?: string;
+      year?: number | string;
+    },
   ) => api.get<ListEnvelope<'invoices', Invoice>>('/invoices', { params }),
   getById: (id: UUID) => api.get<InvoiceResponse>(`/invoices/${id}`),
   create: (data: InvoicePayload) => api.post<Invoice>('/invoices', data),

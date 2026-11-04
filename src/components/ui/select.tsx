@@ -5,6 +5,10 @@ import { ChevronDown, Search, X } from 'lucide-react';
 export interface SelectOption {
   value: string;
   label: string;
+  /** Shown greyed out and cannot be picked (e.g. a child of a group that is chosen as a whole). */
+  disabled?: boolean;
+  /** Indents the option under the previous one, to render a nested list. */
+  indent?: boolean;
 }
 
 export interface SelectProps {
@@ -112,6 +116,7 @@ const Select = ({
   };
 
   const handleSelect = (option: SelectOption) => {
+    if (option.disabled) return;
     onChange(option.value);
     setIsOpen(false);
     setSearchTerm('');
@@ -190,10 +195,14 @@ const Select = ({
                 <div
                   key={option.value}
                   onClick={() => handleSelect(option)}
+                  aria-disabled={option.disabled || undefined}
                   className={cn(
-                    'relative flex w-full cursor-pointer select-none items-center rounded-sm py-2 px-3 text-sm outline-none',
-                    'hover:bg-accent hover:text-accent-foreground',
+                    'relative flex w-full select-none items-center rounded-sm py-2 px-3 text-sm outline-none',
                     'transition-colors',
+                    option.indent && 'pl-8',
+                    option.disabled
+                      ? 'cursor-not-allowed text-slate-400'
+                      : 'cursor-pointer hover:bg-accent hover:text-accent-foreground',
                     option.value === value && 'bg-accent/50 font-medium',
                   )}
                 >
