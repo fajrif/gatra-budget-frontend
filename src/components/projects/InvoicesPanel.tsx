@@ -1,3 +1,4 @@
+import { formatPeriods } from '@/utils/billingPeriods';
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { invoicesAPI } from '@/api/endpoints';
@@ -97,9 +98,12 @@ const InvoicesPanel = ({ projectId }: InvoicesPanelProps) => {
                   <Badge variant="outline" className={`text-xs ${statusClasses[inv.status] ?? ''}`}>
                     {inv.status}
                   </Badge>
+                  <Badge variant="outline" className="text-xs">
+                    {inv.metode_pembayaran}
+                  </Badge>
                 </div>
                 <p className="text-xs text-slate-500 truncate mt-0.5">
-                  {inv.nama_invoice} · Tagihan {formatDate(inv.tgl_tagihan)}
+                  {inv.nama_invoice} · Periode {formatPeriods(inv.periode_tagihan)} · Tagihan {formatDate(inv.tgl_tagihan)}
                   {inv.tgl_bayar ? ` · Dibayar ${formatDate(inv.tgl_bayar)}` : ''}
                 </p>
               </div>

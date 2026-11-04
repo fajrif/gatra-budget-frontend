@@ -18,6 +18,7 @@ import {
   Receipt,
   Briefcase,
   CreditCard,
+  Layers,
   type LucideIcon,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -57,6 +58,7 @@ const navigationBudgetGroup: NavGroup = {
   key: 'budgetManagement',
   roles: ['admin', 'user'],
   children: [
+    { title: 'Group Proyek', url: '/project-groups', icon: Layers, roles: ['admin'] },
     { title: 'Proyek', url: '/projects', icon: Briefcase, roles: ['admin', 'user'] },
     { title: 'Transaksi', url: '/transactions', icon: CreditCard, roles: ['admin', 'user'] },
     { title: 'Invoice', url: '/invoices', icon: FileText, roles: ['admin', 'user'] },

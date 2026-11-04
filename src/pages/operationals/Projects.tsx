@@ -93,6 +93,9 @@ const Projects = () => {
               • <strong className="font-semibold">No. SP2K:</strong> nomor surat perintah kerja proyek
             </p>
             <p>
+              • <strong className="font-semibold">Group Proyek:</strong> kelompokkan beberapa proyek (kontrak bertahap) yang merupakan satu pekerjaan; opsional, kelola di menu Group Proyek
+            </p>
+            <p>
               • <strong className="font-semibold">No. Perjanjian / No. Amandemen:</strong> nomor kontrak dan amandemennya (opsional)
             </p>
             <p>

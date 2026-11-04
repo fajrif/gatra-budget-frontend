@@ -32,6 +32,10 @@ export const createProjectsColumnDefs = ({
     headerName: 'Judul Pekerjaan',
   },
   {
+    field: 'project_group.nama',
+    headerName: 'Group Proyek',
+  },
+  {
     field: 'client.name',
     headerName: 'Klien',
   },

@@ -43,6 +43,21 @@ export interface OperationalCostType {
   updated_at: ISODateString;
 }
 
+/**
+ * Mirrors `handlers.ProjectGroupResponse`: groups the project records (contract
+ * periods) of one piece of work. `project_count` / `total_nilai` come from the
+ * list endpoint (sum of the child projects' `nilai_pekerjaan`).
+ */
+export interface ProjectGroup {
+  id: UUID;
+  nama: string;
+  deskripsi?: string | null;
+  project_count?: number;
+  total_nilai?: number;
+  created_at: ISODateString;
+  updated_at: ISODateString;
+}
+
 /** YYYY-MM-DD, as emitted by Go's models.Date. */
 export type DateOnlyString = string;
 
@@ -73,6 +88,8 @@ export interface Project {
   client?: Client | null;
   contract_type_id?: UUID | null;
   contract_type?: ContractType | null;
+  project_group_id?: UUID | null;
+  project_group?: ProjectGroup | null;
   contract_status: ContractStatus;
   /** True for an ongoing contract that ends within one month. */
   ending_soon: boolean;
@@ -122,6 +139,12 @@ export interface CostOperation {
 /** Submit = billed, Kliring = paid (tgl_bayar required). */
 export type InvoiceStatus = 'Submit' | 'Kliring';
 
+/**
+ * Kontrak = paid per contract (bills exactly one month); SPR = the client's cash
+ * advance (bills one or more months).
+ */
+export type PaymentMethod = 'Kontrak' | 'SPR';
+
 /** Mirrors `models.Invoice`. `manajemen_fee` is a fixed amount typed in by the user. */
 export interface Invoice {
   id: UUID;
@@ -132,6 +155,9 @@ export interface Invoice {
   tgl_tagihan: DateOnlyString;
   tgl_bayar?: DateOnlyString | null;
   status: InvoiceStatus;
+  metode_pembayaran: PaymentMethod;
+  /** Months (YYYY-MM) this invoice bills for; may differ from tgl_tagihan/tgl_bayar. */
+  periode_tagihan: string[];
   nilai: number;
   description?: string | null;
   manajemen_fee: number;

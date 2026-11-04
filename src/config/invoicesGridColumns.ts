@@ -1,6 +1,7 @@
 import type { ColDef } from 'ag-grid-community';
 import { ActionMenuCellRenderer, BadgeCellRenderer, CurrencyCellRenderer } from '@/components/ag-grid/cellRenderers';
 import { formatDate } from '@/utils/formatters';
+import { formatPeriods } from '@/utils/billingPeriods';
 import type { GridActionHandlers } from '@/config/gridTypes';
 import type { Invoice } from '@/types';
 
@@ -9,6 +10,11 @@ export { defaultColDef } from '@/config/defaultColDef';
 export const invoiceStatusBadgeClasses: Record<string, { bg: string; text: string; border: string }> = {
   Submit: { bg: 'bg-amber-100', text: 'text-amber-800', border: 'border-amber-200' },
   Kliring: { bg: 'bg-green-100', text: 'text-green-800', border: 'border-green-200' },
+};
+
+export const paymentMethodBadgeClasses: Record<string, { bg: string; text: string; border: string }> = {
+  Kontrak: { bg: 'bg-blue-100', text: 'text-blue-800', border: 'border-blue-200' },
+  SPR: { bg: 'bg-purple-100', text: 'text-purple-800', border: 'border-purple-200' },
 };
 
 export const createInvoicesColumnDefs = ({
@@ -27,6 +33,21 @@ export const createInvoicesColumnDefs = ({
   {
     field: 'project.judul_pekerjaan',
     headerName: 'Proyek',
+  },
+  {
+    field: 'periode_tagihan',
+    headerName: 'Periode Tagihan',
+    width: 170,
+    valueFormatter: (p) => formatPeriods(p.value),
+  },
+  {
+    field: 'metode_pembayaran',
+    headerName: 'Metode',
+    width: 110,
+    cellRendererSelector: (params) => ({
+      component: BadgeCellRenderer,
+      params: { badgeClasses: paymentMethodBadgeClasses[params.data?.metode_pembayaran ?? ''] },
+    }),
   },
   {
     field: 'tgl_tagihan',

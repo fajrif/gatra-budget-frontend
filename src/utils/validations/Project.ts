@@ -12,6 +12,7 @@ export const projectSchema = z
     nilai_pekerjaan: z.number().positive('Nilai pekerjaan wajib diisi dan harus lebih besar dari 0'),
     client_id: z.string().uuid().optional().or(z.literal('')),
     contract_type_id: z.string().uuid().optional().or(z.literal('')),
+    project_group_id: z.string().uuid().optional().or(z.literal('')),
   })
   .refine((data) => !data.tanggal_selesai || data.tanggal_selesai > data.tanggal_mulai, {
     message: 'Tanggal selesai harus setelah tanggal mulai',

@@ -5,6 +5,7 @@ import {
   contractTypesAPI,
   costTypesAPI,
   operationalCostTypesAPI,
+  projectGroupsAPI,
   projectsAPI,
 } from '@/api/endpoints';
 import type { ImportKind, ImportRow } from '@/types';
@@ -48,6 +49,7 @@ const TEMPLATES: Record<ImportKind, TemplateDefinition> = {
       { key: 'tanggal_perjanjian', label: 'Tanggal Perjanjian', required: false, type: 'date', width: 18, note: `${DATE_NOTE}; opsional, tidak boleh setelah Tanggal Mulai`, example: '2025-12-15' },
       { key: 'client', label: 'Klien', required: false, type: 'text', width: 28, note: 'nama klien persis seperti di sheet Referensi; opsional', example: '' },
       { key: 'contract_type', label: 'Jenis Kontrak', required: false, type: 'text', width: 24, note: 'nama jenis kontrak persis seperti di sheet Referensi; opsional', example: '' },
+      { key: 'project_group', label: 'Group Proyek', required: false, type: 'text', width: 30, note: 'nama group proyek persis seperti di sheet Referensi; opsional', example: '' },
     ],
     rules: [
       'tanggal_selesai harus setelah tanggal_mulai.',
@@ -95,6 +97,8 @@ const TEMPLATES: Record<ImportKind, TemplateDefinition> = {
       { key: 'nama_invoice', label: 'Nama Invoice', required: true, type: 'text', width: 36, note: 'judul tagihan', example: 'Termin 1' },
       { key: 'tgl_tagihan', label: 'Tanggal Tagihan', required: true, type: 'date', width: 16, note: DATE_NOTE, example: '2026-10-01' },
       { key: 'status', label: 'Status', required: true, type: 'text', width: 14, note: 'Submit (belum dibayar) atau Kliring (sudah dibayar)', example: 'Kliring' },
+      { key: 'metode_pembayaran', label: 'Metode Pembayaran', required: true, type: 'text', width: 20, note: 'Kontrak (pembayaran per kontrak) atau SPR (kas klien)', example: 'Kontrak' },
+      { key: 'periode_tagihan', label: 'Periode Tagihan', required: true, type: 'text', width: 26, note: 'bulan yang ditagih, format YYYY-MM, mis. 2026-02. Kontrak: tepat 1 bulan. SPR: boleh beberapa, pisahkan dengan koma, mis. 2026-03, 2026-04', example: '2026-09' },
       { key: 'tgl_bayar', label: 'Tanggal Bayar', required: false, type: 'date', width: 16, note: `${DATE_NOTE}; wajib bila Kliring, kosong bila Submit, harus setelah Tanggal Tagihan`, example: '2026-10-20' },
       { key: 'nilai', label: 'Nilai', required: true, type: 'number', width: 20, note: 'angka, harus lebih dari 0', example: 100000000 },
       { key: 'manajemen_fee', label: 'Manajemen Fee', required: false, type: 'number', width: 20, note: 'angka tetap; kosong = 0; tidak boleh melebihi Nilai', example: 5000000 },
@@ -104,6 +108,9 @@ const TEMPLATES: Record<ImportKind, TemplateDefinition> = {
       'No SP2K harus sudah ada di sistem (import Proyek terlebih dahulu).',
       'Status Kliring wajib punya Tanggal Bayar; status Submit tidak boleh punya Tanggal Bayar.',
       'Tanggal Bayar harus setelah Tanggal Tagihan.',
+      'Periode Tagihan boleh berbeda dari Tanggal Tagihan (mis. tagihan bulan Februari yang diterbitkan di Maret).',
+      'Metode Kontrak: Periode Tagihan tepat 1 bulan. Metode SPR: satu atau beberapa bulan.',
+      'Setiap bulan pada Periode Tagihan harus berada dalam masa kontrak proyek (Tanggal Mulai s/d Tanggal Selesai).',
       'Manajemen Fee tidak boleh negatif dan tidak boleh melebihi Nilai.',
       'No Invoice tidak boleh sama dengan baris lain di file ini.',
       'Bila No Invoice sudah ada di sistem, invoice tsb diperbarui (bukan dibuat ganda).',
@@ -119,13 +126,15 @@ interface ReferenceList {
 /** Master data the user must copy names from, fetched when the template is downloaded. */
 const loadReferences = async (kind: ImportKind): Promise<ReferenceList[]> => {
   if (kind === 'projects') {
-    const [clients, contractTypes] = await Promise.all([
+    const [clients, contractTypes, projectGroups] = await Promise.all([
       clientsAPI.getAll({ all: true }),
       contractTypesAPI.getAll({ all: true }),
+      projectGroupsAPI.getAll({ all: true }),
     ]);
     return [
       { heading: 'Klien', values: (clients.data?.clients ?? []).map((c) => c.name) },
       { heading: 'Jenis Kontrak', values: (contractTypes.data?.contract_types ?? []).map((c) => c.name) },
+      { heading: 'Group Proyek', values: (projectGroups.data?.project_groups ?? []).map((g) => g.nama) },
     ];
   }
 
@@ -182,11 +191,16 @@ export const downloadImportTemplate = async (kind: ImportKind): Promise<void> =>
     cell.note = `${col.required ? 'Wajib' : 'Opsional'}: ${col.note}`;
     if (col.required) cell.font = { bold: true, color: { argb: 'FFB00020' } };
     if (col.type === 'date') data.getColumn(i + 1).numFmt = 'yyyy-mm-dd';
+    // Keep "2026-03" as text; Excel would otherwise turn it into a date.
+    if (col.key === 'periode_tagihan') data.getColumn(i + 1).numFmt = '@';
   });
 
   // Dropdowns for fixed or master-data values.
   const dropdowns: Record<string, string> = {};
-  if (kind === 'invoices') dropdowns.status = '"Submit,Kliring"';
+  if (kind === 'invoices') {
+    dropdowns.status = '"Submit,Kliring"';
+    dropdowns.metode_pembayaran = '"Kontrak,SPR"';
+  }
 
   references.forEach((list, listIndex) => {
     reference.getCell(1, listIndex + 1).value = list.heading;
@@ -195,7 +209,7 @@ export const downloadImportTemplate = async (kind: ImportKind): Promise<void> =>
     });
     reference.getColumn(listIndex + 1).width = 40;
 
-    const key = { Klien: 'client', 'Jenis Kontrak': 'contract_type', 'Jenis Biaya': 'cost_type' }[list.heading];
+    const key = { Klien: 'client', 'Jenis Kontrak': 'contract_type', 'Group Proyek': 'project_group', 'Jenis Biaya': 'cost_type' }[list.heading];
     if (key && list.values.length > 0) {
       const letter = columnLetter(listIndex);
       dropdowns[key] = `Referensi!$${letter}$2:$${letter}$${list.values.length + 1}`;
@@ -293,7 +307,9 @@ export const parseImportFile = async (file: File, kind: ImportKind): Promise<Imp
     const row: ImportRow = { row: rowNumber };
     let hasValue = false;
     for (const col of definition.columns) {
-      const text = cellToText(sheetRow.getCell(columnByKey.get(col.key) as number).value);
+      let text = cellToText(sheetRow.getCell(columnByKey.get(col.key) as number).value);
+      // Excel may have turned a typed "2026-03" into a date (read back as 2026-03-01).
+      if (col.key === 'periode_tagihan') text = text.replace(/(\d{4}-\d{2})-\d{2}/g, '$1');
       if (text !== '') hasValue = true;
       row[col.key] = text;
     }

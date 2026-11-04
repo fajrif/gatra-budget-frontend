@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { projectsAPI, clientsAPI, contractTypesAPI } from '@/api/endpoints';
+import { projectsAPI, clientsAPI, contractTypesAPI, projectGroupsAPI } from '@/api/endpoints';
 import { isAxiosError } from 'axios';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -46,6 +46,7 @@ const toFormValues = (project?: Project): ProjectFormValues => ({
   nilai_pekerjaan: project?.nilai_pekerjaan ?? 0,
   client_id: project?.client_id ?? '',
   contract_type_id: project?.contract_type_id ?? '',
+  project_group_id: project?.project_group_id ?? '',
 });
 
 const AddEditProjectDialog = ({
@@ -89,6 +90,7 @@ const AddEditProjectDialog = ({
         ...data,
         client_id: data.client_id || undefined,
         contract_type_id: data.contract_type_id || undefined,
+        project_group_id: data.project_group_id || undefined,
         tanggal_perjanjian: data.tanggal_perjanjian || undefined,
       };
       return editingItem?.id ? projectsAPI.update(editingItem.id, payload) : projectsAPI.create(payload);
@@ -110,6 +112,12 @@ const AddEditProjectDialog = ({
         variant: 'destructive',
       });
     },
+  });
+
+  const { data: projectGroupsData } = useQuery({
+    queryKey: ['project-groups-all'],
+    queryFn: () => projectGroupsAPI.getAll({ all: true }),
+    select: (res) => res.data?.project_groups ?? [],
   });
 
   const mapOptions = (items: { id: string; name: string }[] = []) =>
@@ -218,6 +226,26 @@ const AddEditProjectDialog = ({
                 )}
               />
             </div>
+          </div>
+
+          <div>
+            <Label>
+              Group Proyek <span className="text-slate-400 text-xs">(opsional)</span>
+            </Label>
+            <Controller
+              name="project_group_id"
+              control={control}
+              render={({ field }) => (
+                <Select
+                  options={(projectGroupsData ?? []).map((g) => ({ value: g.id, label: g.nama }))}
+                  value={field.value}
+                  onChange={field.onChange}
+                  placeholder="Pilih..."
+                  className="mt-1"
+                  clearable
+                />
+              )}
+            />
           </div>
 
           <DialogFooter>

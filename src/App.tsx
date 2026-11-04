@@ -20,6 +20,7 @@ import Clients from '@/pages/masters/Clients';
 import ContractTypes from '@/pages/masters/ContractTypes';
 import CostTypes from '@/pages/masters/CostTypes';
 import OperationalCostTypes from '@/pages/masters/OperationalCostTypes';
+import ProjectGroups from '@/pages/masters/ProjectGroups';
 
 // Projects (open to any authenticated user)
 import Projects from '@/pages/operationals/Projects';
@@ -221,6 +222,17 @@ function App() {
                   <ProtectedRoute adminOnly>
                     <Layout>
                       <OperationalCostTypes />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/project-groups"
+                element={
+                  <ProtectedRoute adminOnly>
+                    <Layout>
+                      <ProjectGroups />
                     </Layout>
                   </ProtectedRoute>
                 }

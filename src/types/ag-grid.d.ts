@@ -18,6 +18,8 @@ declare module 'ag-grid-community' {
     onDelete?: (row: TData) => void;
     /** Row view handler, where the resource supports a detail view. */
     onView?: (row: TData) => void;
+    /** Expand/collapse handler for tree-like rows (`ProjectGroupTreeCellRenderer`). */
+    onToggle?: (row: TData) => void;
     /** Tooltip copy for `TooltipCellRenderer`; defaults to the cell value. */
     tooltipText?: string;
     /** Tailwind class fragments for `BadgeCellRenderer`. */

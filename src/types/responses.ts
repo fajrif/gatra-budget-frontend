@@ -13,6 +13,7 @@ import type {
   Invoice,
   OperationalCostType,
   Project,
+  ProjectGroup,
   Transaction,
 } from './budget';
 
@@ -26,6 +27,7 @@ export type ClientResponse = { client: Client };
 export type ContractTypeResponse = { contract_type: ContractType };
 export type CostTypeResponse = { cost_type: CostType };
 export type ProjectResponse = { project: Project };
+export type ProjectGroupResponse = { project_group: ProjectGroup };
 export type InvoiceResponse = { invoice: Invoice };
 export type TransactionResponse = { transaction: Transaction };
 export type OperationalCostTypeResponse = { operational_cost_type: OperationalCostType };

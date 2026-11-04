@@ -97,6 +97,12 @@ const Invoices = () => {
               • <strong className="font-semibold">Tanggal Tagihan:</strong> tanggal tagihan diterbitkan
             </p>
             <p>
+              • <strong className="font-semibold">Periode Tagihan:</strong> bulan proyek yang ditagih; bisa berbeda dari tanggal tagihan/bayar (mis. tagihan Februari yang terbit di Maret) dan harus dalam masa kontrak proyek
+            </p>
+            <p>
+              • <strong className="font-semibold">Metode Pembayaran:</strong> Kontrak = pembayaran per kontrak, periode tepat 1 bulan; SPR = kas klien, periode boleh lebih dari satu bulan
+            </p>
+            <p>
               • <strong className="font-semibold">Status:</strong> Submit = sudah ditagihkan; Kliring = sudah dibayar
             </p>
             <p>

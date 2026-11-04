@@ -32,6 +32,8 @@ import type {
   MonthlyReportTotals,
   ContractStatus,
   Project,
+  ProjectGroup,
+  ProjectGroupResponse,
   ProjectResponse,
   ProjectSummary,
   Province,
@@ -282,3 +284,14 @@ export const reportsAPI = {
 };
 
 export type { UserResponse };
+// Project Groups API (reads open to any authenticated user, writes admin-only)
+export const projectGroupsAPI = {
+  getAll: (params?: ListParams) =>
+    api.get<ListEnvelope<'project_groups', ProjectGroup>>('/project-groups', { params }),
+  getById: (id: UUID) => api.get<ProjectGroupResponse>(`/project-groups/${id}`),
+  create: (data: Pick<ProjectGroup, 'nama'> & { deskripsi?: string }) =>
+    api.post<ProjectGroup>('/project-groups', data),
+  update: (id: UUID, data: Pick<ProjectGroup, 'nama'> & { deskripsi?: string }) =>
+    api.put<ProjectGroup>(`/project-groups/${id}`, data),
+  delete: (id: UUID) => api.delete(`/project-groups/${id}`),
+};

@@ -24,7 +24,9 @@ export type {
   OperationalCostType,
   OperationalSummaryRow,
   MonthlyReportTotals,
+  PaymentMethod,
   Project,
+  ProjectGroup,
   ProjectSummary,
   Transaction,
 } from './budget';
@@ -50,6 +52,7 @@ export type {
   OperationalCostTypeResponse,
   CountryResponse,
   InvoiceResponse,
+  ProjectGroupResponse,
   ProjectResponse,
   ProvinceResponse,
   TransactionResponse,
