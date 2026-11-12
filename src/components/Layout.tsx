@@ -74,6 +74,7 @@ const navigationReportsGroup: NavGroup = {
   children: [
     { title: 'Laporan Tahunan', url: '/reports/yearly', icon: Wallet, roles: ['admin'] },
     { title: 'Monitoring Invoice', url: '/reports/invoice-monitoring', icon: ClipboardList, roles: ['admin', 'user'] },
+    { title: 'Forecast Kas', url: '/reports/forecast', icon: TrendingUp, roles: ['admin'] },
   ],
 };
 
