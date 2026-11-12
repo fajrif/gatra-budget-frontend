@@ -16,7 +16,7 @@ const ForecastReportView = forwardRef<HTMLDivElement, { data: ForecastReportData
   const tone = (n: number) => (n >= 0 ? 'text-green-700' : 'text-red-600');
   return (
     <div ref={ref} className="bg-white text-slate-900 text-[11px] leading-snug p-4" style={{ width: 1000 }}>
-      <h1 className="text-lg font-bold">Forecast Kas: {data.nama}</h1>
+      <h1 className="text-lg font-bold">Perkiraan Kas: {data.nama}</h1>
       <p className="text-slate-600 mb-3">
         Periode {bulanLabel(data.bulan)} · Saldo {formatRupiah(summary.saldo)}
       </p>
