@@ -221,3 +221,50 @@ export interface OperationalSummaryRow {
   nama_biaya: string;
   total: number;
 }
+
+/** Mirrors `models.ForecastExpense`: one planned expense line of a Forecast Kas sheet. */
+export interface ForecastExpense {
+  id: UUID;
+  forecast_sheet_id: UUID;
+  item: string;
+  tanggal: DateOnlyString;
+  jumlah: number;
+  urutan: number;
+}
+
+/** A sheet as listed (`handlers.ForecastSheetListItem`). `total_pemasukan` counts ticked invoices still unpaid. */
+export interface ForecastSheetListItem {
+  id: UUID;
+  nama: string;
+  /** YYYY-MM */
+  bulan: string;
+  saldo: number;
+  created_by: string;
+  created_at: ISODateString;
+  updated_at: ISODateString;
+  total_pengeluaran: number;
+  total_pemasukan: number;
+  jumlah_invoice: number;
+}
+
+/** A whole sheet (`handlers.ForecastSheetDetail`). `invoice_ids` are the ticked invoices still unpaid. */
+export interface ForecastSheet {
+  id: UUID;
+  nama: string;
+  bulan: string;
+  saldo: number;
+  created_by: string;
+  created_at: ISODateString;
+  updated_at: ISODateString;
+  expenses: ForecastExpense[];
+  invoice_ids: UUID[];
+}
+
+/** Body of POST/PUT /forecast-sheets: the whole sheet replaces what was stored. */
+export interface ForecastSheetPayload {
+  nama: string;
+  bulan: string;
+  saldo: number;
+  expenses: { item: string; tanggal: DateOnlyString; jumlah: number }[];
+  invoice_ids: UUID[];
+}

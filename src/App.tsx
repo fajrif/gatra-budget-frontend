@@ -36,6 +36,8 @@ import UserAddresses from '@/pages/operationals/UserAddresses';
 import ReportSample from '@/pages/reports/ReportSample';
 import YearlyReport from '@/pages/reports/YearlyReport';
 import InvoiceMonitoring from '@/pages/reports/InvoiceMonitoring';
+import ForecastList from '@/pages/reports/ForecastList';
+import ForecastDetail from '@/pages/reports/ForecastDetail';
 
 // Layout
 import Layout from '@/components/Layout';
@@ -295,6 +297,28 @@ function App() {
                   <ProtectedRoute>
                     <Layout>
                       <InvoiceMonitoring />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+
+              {/* Forecast Kas — admin only (holds the company balance) */}
+              <Route
+                path="/reports/forecast"
+                element={
+                  <ProtectedRoute adminOnly>
+                    <Layout>
+                      <ForecastList />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/reports/forecast/:id"
+                element={
+                  <ProtectedRoute adminOnly>
+                    <Layout>
+                      <ForecastDetail />
                     </Layout>
                   </ProtectedRoute>
                 }

@@ -54,6 +54,8 @@ export interface ExportColumn<T = unknown> {
   numFmt?: string;
   /** Returns an ARGB colour (e.g. 'FFDC2626') to paint the cell's text, or undefined for none. */
   fontColorWhen?: (item: T) => string | undefined;
+  /** Returns true to italicize the cell's text. Combines with fontColorWhen. */
+  italicWhen?: (item: T) => boolean;
 }
 
 export interface ExportExcelOptions {
@@ -99,7 +101,13 @@ export const exportToExcel = async <T extends Record<string, unknown> | object>(
     const row = worksheet.addRow(rowData);
     columns.forEach((col, index) => {
       const color = col.fontColorWhen?.(item);
-      if (color) row.getCell(index + 1).font = { color: { argb: color } };
+      const italic = col.italicWhen?.(item);
+      if (color || italic) {
+        row.getCell(index + 1).font = {
+          ...(color ? { color: { argb: color } } : {}),
+          ...(italic ? { italic: true } : {}),
+        };
+      }
     });
   });
 

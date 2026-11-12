@@ -10,6 +10,7 @@ import type {
   ContractType,
   CostOperation,
   CostType,
+  ForecastSheet,
   Invoice,
   OperationalCostType,
   Project,
@@ -32,3 +33,5 @@ export type InvoiceResponse = { invoice: Invoice };
 export type TransactionResponse = { transaction: Transaction };
 export type OperationalCostTypeResponse = { operational_cost_type: OperationalCostType };
 export type CostOperationResponse = { cost_operation: CostOperation };
+
+export type ForecastSheetResponse = { forecast_sheet: ForecastSheet };

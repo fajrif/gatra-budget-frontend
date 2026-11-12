@@ -16,6 +16,9 @@ import type {
   CostTypeResponse,
   Country,
   CountryResponse,
+  ForecastSheetListItem,
+  ForecastSheetPayload,
+  ForecastSheetResponse,
   ImportResult,
   ImportRow,
   ListEnvelope,
@@ -239,7 +242,10 @@ export const invoicesAPI = {
       project_group_id?: string;
       status?: InvoiceStatus;
       month?: string;
-      year?: number | string;
+      /** Month (YYYY-MM) of tgl_bayar. */
+      paid_month?: string;
+      /** Invoices whose earliest billing period is in this year. */
+      periode_year?: number | string;
     },
   ) => api.get<ListEnvelope<'invoices', Invoice>>('/invoices', { params }),
   getById: (id: UUID) => api.get<InvoiceResponse>(`/invoices/${id}`),
@@ -300,4 +306,15 @@ export const projectGroupsAPI = {
   update: (id: UUID, data: Pick<ProjectGroup, 'nama'> & { deskripsi?: string }) =>
     api.put<ProjectGroup>(`/project-groups/${id}`, data),
   delete: (id: UUID) => api.delete(`/project-groups/${id}`),
+};
+
+// Forecast Kas sheets (admin only). A save sends the whole sheet.
+export const forecastSheetsAPI = {
+  getAll: (params?: ListParams) =>
+    api.get<ListEnvelope<'forecast_sheets', ForecastSheetListItem>>('/forecast-sheets', { params }),
+  getById: (id: UUID) => api.get<ForecastSheetResponse>(`/forecast-sheets/${id}`),
+  create: (data: ForecastSheetPayload) => api.post<ForecastSheetResponse>('/forecast-sheets', data),
+  update: (id: UUID, data: ForecastSheetPayload) =>
+    api.put<ForecastSheetResponse>(`/forecast-sheets/${id}`, data),
+  delete: (id: UUID) => api.delete(`/forecast-sheets/${id}`),
 };

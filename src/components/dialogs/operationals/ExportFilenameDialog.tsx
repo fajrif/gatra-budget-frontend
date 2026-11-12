@@ -76,7 +76,7 @@ const ExportFilenameDialog = ({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Export ke Excel</DialogTitle>
+          <DialogTitle>Export ke {extension === 'pdf' ? 'PDF' : 'Excel'}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit(submit)} className="space-y-4">
           <div>

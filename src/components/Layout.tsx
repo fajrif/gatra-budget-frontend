@@ -74,12 +74,16 @@ const navigationReportsGroup: NavGroup = {
   children: [
     { title: 'Laporan Tahunan', url: '/reports/yearly', icon: Wallet, roles: ['admin'] },
     { title: 'Monitoring Invoice', url: '/reports/invoice-monitoring', icon: ClipboardList, roles: ['admin', 'user'] },
+    { title: 'Perkiraan Kas', url: '/reports/forecast', icon: TrendingUp, roles: ['admin'] },
   ],
 };
 
 export interface LayoutProps {
   children?: React.ReactNode;
 }
+
+/** A menu entry stays active on its own sub-pages too (e.g. /reports/forecast/:id). */
+const isPathActive = (pathname: string, url: string) => pathname === url || pathname.startsWith(`${url}/`);
 
 export default function Layout({ children }: LayoutProps) {
   const location = useLocation();
@@ -162,7 +166,7 @@ export default function Layout({ children }: LayoutProps) {
             {filteredNavItems
               .filter((item) => item.url === '/dashboard')
               .map((item) => {
-                const isActive = location.pathname === item.url;
+                const isActive = isPathActive(location.pathname, item.url);
                 const linkContent = (
                   <Link
                     key={item.title}
@@ -203,7 +207,7 @@ export default function Layout({ children }: LayoutProps) {
                             transition-all duration-200 hover:bg-slate-100
                             ${
                               filteredReportChildren.some(
-                                (item) => location.pathname === item.url,
+                                (item) => isPathActive(location.pathname, item.url),
                               )
                                 ? 'text-blue-900 font-medium'
                                 : 'text-slate-700'
@@ -216,7 +220,7 @@ export default function Layout({ children }: LayoutProps) {
                       title={navigationReportsGroup.title}
                     >
                       {filteredReportChildren.map((item) => {
-                        const isActive = location.pathname === item.url;
+                        const isActive = isPathActive(location.pathname, item.url);
                         return (
                           <Link
                             key={item.title}
@@ -243,7 +247,7 @@ export default function Layout({ children }: LayoutProps) {
                         flex w-full items-center gap-3 px-3 py-2.5 text-sm rounded-lg
                         transition-all duration-200 hover:bg-slate-100
                         ${
-                          filteredReportChildren.some((item) => location.pathname === item.url)
+                          filteredReportChildren.some((item) => isPathActive(location.pathname, item.url))
                             ? 'text-blue-900 font-medium'
                             : 'text-slate-700'
                         }
@@ -261,7 +265,7 @@ export default function Layout({ children }: LayoutProps) {
                 <CollapsibleContent>
                   <div className="ml-4 pl-4 border-l border-slate-200 space-y-1 mt-1">
                     {filteredReportChildren.map((item) => {
-                      const isActive = location.pathname === item.url;
+                      const isActive = isPathActive(location.pathname, item.url);
                       return (
                         <Link
                           key={item.title}
@@ -302,7 +306,7 @@ export default function Layout({ children }: LayoutProps) {
                             transition-all duration-200 hover:bg-slate-100
                             ${
                               filteredBudgetChildren.some(
-                                (item) => location.pathname === item.url,
+                                (item) => isPathActive(location.pathname, item.url),
                               )
                                 ? 'text-blue-900 font-medium'
                                 : 'text-slate-700'
@@ -315,7 +319,7 @@ export default function Layout({ children }: LayoutProps) {
                       title={navigationBudgetGroup.title}
                     >
                       {filteredBudgetChildren.map((item) => {
-                        const isActive = location.pathname === item.url;
+                        const isActive = isPathActive(location.pathname, item.url);
                         return (
                           <Link
                             key={item.title}
@@ -342,7 +346,7 @@ export default function Layout({ children }: LayoutProps) {
                         flex w-full items-center gap-3 px-3 py-2.5 text-sm rounded-lg
                         transition-all duration-200 hover:bg-slate-100
                         ${
-                          filteredBudgetChildren.some((item) => location.pathname === item.url)
+                          filteredBudgetChildren.some((item) => isPathActive(location.pathname, item.url))
                             ? 'text-blue-900 font-medium'
                             : 'text-slate-700'
                         }
@@ -360,7 +364,7 @@ export default function Layout({ children }: LayoutProps) {
                 <CollapsibleContent>
                   <div className="ml-4 pl-4 border-l border-slate-200 space-y-1 mt-1">
                     {filteredBudgetChildren.map((item) => {
-                      const isActive = location.pathname === item.url;
+                      const isActive = isPathActive(location.pathname, item.url);
                       return (
                         <Link
                           key={item.title}
@@ -392,7 +396,7 @@ export default function Layout({ children }: LayoutProps) {
               {filteredNavItems
                 .filter((item) => item.url !== '/dashboard')
                 .map((item) => {
-                  const isActive = location.pathname === item.url;
+                  const isActive = isPathActive(location.pathname, item.url);
                   const linkContent = (
                     <Link
                       key={item.title}
